@@ -1,0 +1,11 @@
+#!/bin/sh
+set -e
+
+# HEAD~1 is invalid on the first commit; run full checks then.
+if git rev-parse --verify HEAD~1 >/dev/null 2>&1; then
+  pnpm lint:changed
+  pnpm check-types:changed
+else
+  pnpm lint
+  pnpm check-types
+fi
