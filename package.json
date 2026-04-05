@@ -9,7 +9,13 @@
     "check-types": "turbo run check-types",
     "prepare": "husky",
     "lint:changed": "turbo run lint --filter=...[HEAD~1]",
-    "check-types:changed": "turbo run check-types --filter=...[HEAD~1]"
+    "check-types:changed": "turbo run check-types --filter=...[HEAD~1]",
+    "dev:web": "turbo run dev --filter=web",
+    "build:web": "turbo run build --filter=web && turbo run start --filter=web",
+    "start:web": "turbo run start --filter=web",
+    "dev:server": "turbo run dev --filter=server",
+    "build:server": "turbo run build --filter=server",
+    "start:server": "turbo run start --filter=server"
   },
   "devDependencies": {
     "husky": "^9.1.7",
