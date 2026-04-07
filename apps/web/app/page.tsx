@@ -9,7 +9,12 @@ export default function Home() {
 
   return (
     <div className="home-page">
-      <canvas ref={canvasRef} id="canvas" role="presentation">
+      <canvas
+        className="bg-[rgba(0,0,0,0.4)]"
+        ref={canvasRef}
+        id="canvas"
+        role="presentation"
+      >
         This is a fallback
       </canvas>
     </div>

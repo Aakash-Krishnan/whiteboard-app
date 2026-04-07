@@ -1,10 +1,6 @@
 import { useEffect, useRef } from "react";
 import { TPoint, TStroke } from "@whiteboard/types";
-
-type TUseDrawingReturn = {
-  lastX: React.RefObject<number>;
-  lastY: React.RefObject<number>;
-};
+import { useCanvasStore } from "@/store/canvasStore";
 
 function getRect(canvas: HTMLCanvasElement, e: MouseEvent): TPoint {
   const rect = canvas.getBoundingClientRect();
@@ -42,12 +38,11 @@ function reDraw(ctx: CanvasRenderingContext2D | null, strokes: TStroke[]) {
 
 export function useDrawing(
   canvasRef: React.RefObject<HTMLCanvasElement | null>,
-): TUseDrawingReturn {
+): void {
+  const { getState } = useCanvasStore;
+  const addPoint = useCanvasStore((state) => state.addPoint);
+  const addStroke = useCanvasStore((state) => state.addStroke);
   const isDrawing = useRef(false);
-  const lastX = useRef(0);
-  const lastY = useRef(0);
-
-  const strokes = useRef<TStroke[]>([]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -60,12 +55,10 @@ export function useDrawing(
       e.preventDefault();
       isDrawing.current = true;
       const { x, y } = getRect(canvas, e);
-      lastX.current = x;
-      lastY.current = y;
 
-      strokes.current.push({ path: [{ x, y }] });
+      addStroke({ path: [{ x, y }] });
 
-      reDraw(ctx, strokes.current);
+      reDraw(ctx, getState().strokes);
     };
 
     // Stop drawing
@@ -82,13 +75,12 @@ export function useDrawing(
       if (!isDrawing.current) return;
 
       const { x, y } = getRect(canvas, e);
-      lastX.current = x;
-      lastY.current = y;
 
-      strokes.current[strokes.current.length - 1]?.path.push({ x, y });
+      addPoint({ x, y });
 
       cancelAnimationFrame(rafId);
-      rafId = requestAnimationFrame(() => reDraw(ctx, strokes.current));
+
+      rafId = requestAnimationFrame(() => reDraw(ctx, getState().strokes));
     };
 
     // Leave drawing + Stop drawing
@@ -109,7 +101,5 @@ export function useDrawing(
       canvas.removeEventListener("mousemove", handleMouseMove);
       canvas.removeEventListener("mouseleave", handleMouseLeave);
     };
-  }, [canvasRef]);
-
-  return { lastX, lastY };
+  }, [canvasRef, addStroke, addPoint, getState]);
 }
