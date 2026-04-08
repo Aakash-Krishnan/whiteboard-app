@@ -3,15 +3,18 @@ import { create } from "zustand";
 
 export type TCanvasState = {
   strokes: TStroke[];
+  activeColor: string;
 };
 
 export type TCanvasActions = {
   addStroke: (stroke: TStroke) => void;
   addPoint: (point: TPoint) => void;
+  setActiveColor: (color: string) => void;
 };
 
 export const useCanvasStore = create<TCanvasState & TCanvasActions>((set) => ({
   strokes: [],
+  activeColor: "#000000",
   addStroke: (stroke: TStroke) =>
     set((state) => ({
       strokes: [...state.strokes, stroke],
@@ -29,4 +32,5 @@ export const useCanvasStore = create<TCanvasState & TCanvasActions>((set) => ({
         }
       }),
     })),
+  setActiveColor: (color: string) => set({ activeColor: color }),
 }));
