@@ -1,3 +1,7 @@
+import { TOOLS } from "./constants/global";
+
+export type TTool = (typeof TOOLS)[keyof typeof TOOLS];
+
 export type TUser = {
   id: string;
   name: string;
@@ -12,4 +16,5 @@ export type TPoint = {
 export type TStroke = {
   path: TPoint[];
   color?: string;
+  tool: TTool;
 };

@@ -56,7 +56,7 @@ export function useDrawing(
       isDrawing.current = true;
       const { x, y } = getRect(canvas, e);
 
-      addStroke({ path: [{ x, y }], color: getState().activeColor });
+      addStroke({ path: [{ x, y }], color: getState().activeColor, tool: getState().activeTool });
 
       reDraw(ctx, getState().strokes);
     };
