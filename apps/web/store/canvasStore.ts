@@ -1,20 +1,12 @@
-import { TPoint, TStroke } from "@whiteboard/types";
+import { TCanvasActions, TCanvasState } from "@/types/canvasStore";
+import { TPoint, TStroke, TTool } from "@whiteboard/types";
 import { create } from "zustand";
-
-export type TCanvasState = {
-  strokes: TStroke[];
-  activeColor: string;
-};
-
-export type TCanvasActions = {
-  addStroke: (stroke: TStroke) => void;
-  addPoint: (point: TPoint) => void;
-  setActiveColor: (color: string) => void;
-};
+import { TOOLS } from "@whiteboard/types/constants/global";
 
 export const useCanvasStore = create<TCanvasState & TCanvasActions>((set) => ({
   strokes: [],
   activeColor: "#000000",
+  activeTool: TOOLS.PENCIL,
   addStroke: (stroke: TStroke) =>
     set((state) => ({
       strokes: [...state.strokes, stroke],
@@ -33,4 +25,5 @@ export const useCanvasStore = create<TCanvasState & TCanvasActions>((set) => ({
       }),
     })),
   setActiveColor: (color: string) => set({ activeColor: color }),
+  setActiveTool: (tool: TTool) => set({ activeTool: tool }),
 }));
