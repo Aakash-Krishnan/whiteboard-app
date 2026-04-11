@@ -3,7 +3,7 @@
 import React, { createContext } from "react";
 import { useCanvasStore } from "@/store/canvasStore";
 import { TCanvasActions, TCanvasState } from "@/types/canvasStore";
-import ColorPicker from "./ColorPicker";
+
 import Separator from "./Separator";
 import Tool from "./Tool";
 import { TooltipProvider } from "../ui/tooltip";
@@ -36,7 +36,7 @@ export default function Toolbar({
         <div
           className={cn(
             "flex flex-col items-center gap-1 rounded-xl border border-border bg-background/80 p-1.5 shadow-md backdrop-blur-sm",
-            className
+            className,
           )}
         >
           {children}
@@ -46,7 +46,6 @@ export default function Toolbar({
   );
 }
 
-Toolbar.ColorPicker = ColorPicker;
 Toolbar.Separator = Separator;
 Toolbar.Tool = Tool;
 
