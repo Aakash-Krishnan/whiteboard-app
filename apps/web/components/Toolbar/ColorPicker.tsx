@@ -7,20 +7,20 @@ export default function ColorPicker() {
   const { setActiveColor, activeColor } = useToolBar();
 
   return (
-    <div className="toolbar-color-picker size-5">
-      <Tooltip key={`Color Picker`}>
-        <TooltipTrigger asChild>
+    <Tooltip key="Color Picker">
+      <TooltipTrigger asChild>
+        <div className="flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors hover:bg-muted">
           <Input
             type="color"
-            className="size-full"
+            className="size-5 cursor-pointer border-none p-0"
             value={activeColor}
             onChange={(e) => setActiveColor(e.target.value as string)}
           />
-        </TooltipTrigger>
-        <TooltipContent side={"right"}>
-          <p>{`Color Picker`}</p>
-        </TooltipContent>
-      </Tooltip>
-    </div>
+        </div>
+      </TooltipTrigger>
+      <TooltipContent side="right" sideOffset={8}>
+        <p>Color Picker</p>
+      </TooltipContent>
+    </Tooltip>
   );
 }

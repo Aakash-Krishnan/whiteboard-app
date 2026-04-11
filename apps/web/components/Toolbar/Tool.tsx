@@ -19,23 +19,31 @@ export default function Tool(props: TToolProps) {
   const { icon, tool, label } = props;
   const { activeTool, setActiveTool } = useToolBar();
 
+  const handleClick = () => {
+    if (tool !== activeTool) {
+      setActiveTool(tool);
+    }
+  };
+
   return (
-    <div className="toolbar-tool">
-      <Tooltip key={label}>
-        <TooltipTrigger asChild>
-          <Button
-            variant="outline"
-            className="w-fit capitalize"
-            onClick={() => setActiveTool(tool)}
-            disabled={tool === activeTool}
-          >
-            {icon}
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side={"right"}>
-          <p>{label}</p>
-        </TooltipContent>
-      </Tooltip>
-    </div>
+    <Tooltip key={label}>
+      <TooltipTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className={
+            tool === activeTool
+              ? "cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground"
+              : "cursor-pointer hover:bg-muted transition-colors"
+          }
+          onClick={handleClick}
+        >
+          {icon}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent side="right" sideOffset={8}>
+        <p>{label}</p>
+      </TooltipContent>
+    </Tooltip>
   );
 }

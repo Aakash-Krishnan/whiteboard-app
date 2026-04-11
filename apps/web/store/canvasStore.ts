@@ -1,12 +1,14 @@
 import { TCanvasActions, TCanvasState } from "@/types/canvasStore";
 import { TPoint, TStroke, TTool } from "@whiteboard/types";
 import { create } from "zustand";
-import { TOOLS } from "@whiteboard/types/constants/global";
+import { TOOL_PROPERTIES, TOOLS } from "@whiteboard/types/constants/global";
 
 export const useCanvasStore = create<TCanvasState & TCanvasActions>((set) => ({
   strokes: [],
-  activeColor: "#000000",
+  activeColor: TOOL_PROPERTIES.color,
   activeTool: TOOLS.PENCIL,
+  activeToolWidth: TOOL_PROPERTIES.width.thin,
+  isEraser: false,
   addStroke: (stroke: TStroke) =>
     set((state) => ({
       strokes: [...state.strokes, stroke],
@@ -26,4 +28,8 @@ export const useCanvasStore = create<TCanvasState & TCanvasActions>((set) => ({
     })),
   setActiveColor: (color: string) => set({ activeColor: color }),
   setActiveTool: (tool: TTool) => set({ activeTool: tool }),
+  setActiveToolWidth: (
+    width: (typeof TOOL_PROPERTIES.width)[keyof typeof TOOL_PROPERTIES.width],
+  ) => set({ activeToolWidth: width }),
+  setIsEraser: (isEraser: boolean) => set({ isEraser }),
 }));

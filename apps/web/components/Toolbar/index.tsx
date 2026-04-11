@@ -7,6 +7,7 @@ import ColorPicker from "./ColorPicker";
 import Separator from "./Separator";
 import Tool from "./Tool";
 import { TooltipProvider } from "../ui/tooltip";
+import { cn } from "@/lib/utils";
 
 export type TToolBarContext =
   | (Pick<TCanvasState, "activeColor" | "activeTool"> &
@@ -15,7 +16,13 @@ export type TToolBarContext =
 
 export const ToolBarContext = createContext<TToolBarContext>(null);
 
-export default function Toolbar({ children }: { children: React.ReactNode }) {
+export default function Toolbar({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   const activeTool = useCanvasStore((state) => state.activeTool);
   const setActiveTool = useCanvasStore((state) => state.setActiveTool);
   const activeColor = useCanvasStore((state) => state.activeColor);
@@ -25,7 +32,16 @@ export default function Toolbar({ children }: { children: React.ReactNode }) {
     <ToolBarContext.Provider
       value={{ activeTool, setActiveTool, activeColor, setActiveColor }}
     >
-      <TooltipProvider>{children}</TooltipProvider>
+      <TooltipProvider>
+        <div
+          className={cn(
+            "flex flex-col items-center gap-1 rounded-xl border border-border bg-background/80 p-1.5 shadow-md backdrop-blur-sm",
+            className
+          )}
+        >
+          {children}
+        </div>
+      </TooltipProvider>
     </ToolBarContext.Provider>
   );
 }

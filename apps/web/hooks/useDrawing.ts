@@ -17,16 +17,18 @@ function reDraw(ctx: CanvasRenderingContext2D | null, strokes: TStroke[]) {
 
   strokes.forEach((stroke) => {
     const { path } = stroke;
-    if (stroke?.color) {
-      ctx.strokeStyle = stroke.color;
-    } else {
-      ctx.strokeStyle = "rgba(0, 0, 0, 1)";
-    }
+    ctx.globalCompositeOperation = stroke.isEraser
+      ? "destination-out"
+      : "source-over";
+    ctx.strokeStyle = stroke?.color ?? "rgba(0, 0, 0, 1)";
+    ctx.lineWidth = stroke.width;
+
     path.forEach((point, idx) => {
       const { x, y } = point;
       if (idx === 0) {
         ctx.beginPath();
         ctx.moveTo(x, y);
+        ctx.lineTo(x, y);
       } else {
         ctx.lineTo(x, y);
       }
@@ -34,6 +36,8 @@ function reDraw(ctx: CanvasRenderingContext2D | null, strokes: TStroke[]) {
 
     ctx.stroke();
   });
+
+  ctx.globalCompositeOperation = "source-over";
 }
 
 export function useDrawing(
@@ -56,7 +60,13 @@ export function useDrawing(
       isDrawing.current = true;
       const { x, y } = getRect(canvas, e);
 
-      addStroke({ path: [{ x, y }], color: getState().activeColor, tool: getState().activeTool });
+      addStroke({
+        path: [{ x, y }],
+        color: getState().activeColor,
+        tool: getState().activeTool,
+        width: getState().activeToolWidth,
+        isEraser: getState().isEraser,
+      });
 
       reDraw(ctx, getState().strokes);
     };
