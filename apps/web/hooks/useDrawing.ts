@@ -17,15 +17,25 @@ function reDraw(ctx: CanvasRenderingContext2D | null, strokes: TStroke[]) {
 
   strokes.forEach((stroke) => {
     const { path } = stroke;
-    if (stroke?.color) {
-      ctx.strokeStyle = stroke.color;
-    } else {
-      ctx.strokeStyle = "rgba(0, 0, 0, 1)";
-    }
+    ctx.globalCompositeOperation = stroke.isEraser
+      ? "destination-out"
+      : "source-over";
+    ctx.strokeStyle = stroke?.color ?? "rgba(0, 0, 0, 1)";
+    ctx.lineWidth = stroke.width;
+
     path.forEach((point, idx) => {
       const { x, y } = point;
-      if (idx === 0) {
+      if (idx > 0 && idx !== path.length - 1) {
+        const m2 = {
+          x: ((path[idx + 1]?.x ?? 0) + x) / 2,
+          y: ((path[idx + 1]?.y ?? 0) + y) / 2,
+        };
+
+        ctx.quadraticCurveTo(x, y, m2.x, m2.y);
+      } else if (idx === 0) {
         ctx.beginPath();
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
         ctx.moveTo(x, y);
       } else {
         ctx.lineTo(x, y);
@@ -34,6 +44,8 @@ function reDraw(ctx: CanvasRenderingContext2D | null, strokes: TStroke[]) {
 
     ctx.stroke();
   });
+
+  ctx.globalCompositeOperation = "source-over";
 }
 
 export function useDrawing(
@@ -56,7 +68,13 @@ export function useDrawing(
       isDrawing.current = true;
       const { x, y } = getRect(canvas, e);
 
-      addStroke({ path: [{ x, y }], color: getState().activeColor, tool: getState().activeTool });
+      addStroke({
+        path: [{ x, y }],
+        color: getState().activeColor,
+        tool: getState().activeTool,
+        width: getState().activeToolWidth,
+        isEraser: getState().isEraser,
+      });
 
       reDraw(ctx, getState().strokes);
     };
