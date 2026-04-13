@@ -25,10 +25,18 @@ function reDraw(ctx: CanvasRenderingContext2D | null, strokes: TStroke[]) {
 
     path.forEach((point, idx) => {
       const { x, y } = point;
-      if (idx === 0) {
+      if (idx > 0 && idx !== path.length - 1) {
+        const m2 = {
+          x: ((path[idx + 1]?.x ?? 0) + x) / 2,
+          y: ((path[idx + 1]?.y ?? 0) + y) / 2,
+        };
+
+        ctx.quadraticCurveTo(x, y, m2.x, m2.y);
+      } else if (idx === 0) {
         ctx.beginPath();
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
         ctx.moveTo(x, y);
-        ctx.lineTo(x, y);
       } else {
         ctx.lineTo(x, y);
       }
