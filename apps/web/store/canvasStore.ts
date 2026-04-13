@@ -7,7 +7,7 @@ export const useCanvasStore = create<TCanvasState & TCanvasActions>((set) => ({
   strokes: [],
   activeColor: TOOL_PROPERTIES.color,
   activeTool: TOOLS.PENCIL,
-  activeToolWidth: TOOL_PROPERTIES.width.thin,
+  activeThickness: TOOL_PROPERTIES.width.thin,
   isEraser: false,
   addStroke: (stroke: TStroke) =>
     set((state) => ({
@@ -28,8 +28,8 @@ export const useCanvasStore = create<TCanvasState & TCanvasActions>((set) => ({
     })),
   setActiveColor: (color: string) => set({ activeColor: color }),
   setActiveTool: (tool: TTool) => set({ activeTool: tool }),
-  setActiveToolWidth: (
-    width: (typeof TOOL_PROPERTIES.width)[keyof typeof TOOL_PROPERTIES.width],
-  ) => set({ activeToolWidth: width }),
+  setActiveThickness: (
+    thickness: (typeof TOOL_PROPERTIES.width)[keyof typeof TOOL_PROPERTIES.width],
+  ) => set({ activeThickness: thickness }),
   setIsEraser: (isEraser: boolean) => set({ isEraser }),
 }));

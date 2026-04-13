@@ -1,5 +1,8 @@
 export const TOOLS = {
   PENCIL: "pencil",
+  RECTANGLE: "rectangle",
+  CIRCLE: "circle",
+  LINE: "line",
 } as const;
 
 export const TOOL_PROPERTIES = {

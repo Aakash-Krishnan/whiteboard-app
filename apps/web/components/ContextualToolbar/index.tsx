@@ -19,10 +19,10 @@ export default function ContextualToolbar({
 }) {
   const activeTool = useCanvasStore((state) => state.activeTool);
   const activeColor = useCanvasStore((state) => state.activeColor);
-  const activeToolWidth = useCanvasStore((state) => state.activeToolWidth);
+  const activeThickness = useCanvasStore((state) => state.activeThickness);
   const isEraser = useCanvasStore((state) => state.isEraser);
   const setActiveColor = useCanvasStore((state) => state.setActiveColor);
-  const setActiveToolWidth = useCanvasStore((state) => state.setActiveToolWidth);
+  const setActiveThickness = useCanvasStore((state) => state.setActiveThickness);
   const setIsEraser = useCanvasStore((state) => state.setIsEraser);
 
   const controls =
@@ -51,8 +51,8 @@ export default function ContextualToolbar({
               return (
                 <WidthSelector
                   key={control.type}
-                  value={activeToolWidth}
-                  onChange={setActiveToolWidth}
+                  value={activeThickness}
+                  onChange={setActiveThickness}
                   label={control.label}
                 />
               );

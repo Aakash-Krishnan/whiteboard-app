@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { TPoint, TStroke } from "@whiteboard/types";
+import { TOOLS } from "@whiteboard/types/constants/global";
 import { useCanvasStore } from "@/store/canvasStore";
 
 function getRect(canvas: HTMLCanvasElement, e: MouseEvent): TPoint {
@@ -21,7 +22,7 @@ function reDraw(ctx: CanvasRenderingContext2D | null, strokes: TStroke[]) {
       ? "destination-out"
       : "source-over";
     ctx.strokeStyle = stroke?.color ?? "rgba(0, 0, 0, 1)";
-    ctx.lineWidth = stroke.width;
+    ctx.lineWidth = stroke.thickness;
 
     path.forEach((point, idx) => {
       const { x, y } = point;
@@ -68,13 +69,16 @@ export function useDrawing(
       isDrawing.current = true;
       const { x, y } = getRect(canvas, e);
 
-      addStroke({
-        path: [{ x, y }],
-        color: getState().activeColor,
-        tool: getState().activeTool,
-        width: getState().activeToolWidth,
-        isEraser: getState().isEraser,
-      });
+      const activeTool = getState().activeTool;
+
+      if (activeTool === TOOLS.PENCIL)
+        addStroke({
+          path: [{ x, y }],
+          color: getState().activeColor,
+          tool: activeTool,
+          thickness: getState().activeThickness,
+          isEraser: getState().isEraser,
+        });
 
       reDraw(ctx, getState().strokes);
     };
