@@ -60,4 +60,12 @@ export type TLine = TCommonToolProperties &
     arrowHead: TArrowHead;
   };
 
-export type TElement = TStroke | TRectangle | TEllipse | TLine;
+export type TText = TCommonToolProperties &
+  TPoint & {
+    id: string;
+    content: string;
+    fontSize: number;
+    tool: Extract<TTool, "text">;
+  };
+
+export type TElement = TStroke | TRectangle | TEllipse | TLine | TText;

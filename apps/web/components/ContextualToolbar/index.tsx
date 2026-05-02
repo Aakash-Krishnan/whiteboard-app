@@ -11,6 +11,7 @@ import React from "react";
 import ColorPicker from "./ColorPicker";
 import DropdownControl from "./DropdownControl";
 import EraserToggle from "./EraserToggle";
+import FontSizeSelector from "./FontSizeSelector";
 import WidthSelector from "./WidthSelector";
 
 export default function ContextualToolbar({
@@ -25,6 +26,8 @@ export default function ContextualToolbar({
   const fillMode = useCanvasStore((state) => state.fillMode);
   const dashStyle = useCanvasStore((state) => state.dashStyle);
   const arrowHead = useCanvasStore((state) => state.arrowHead);
+  const activeFontSize = useCanvasStore((state) => state.activeFontSize);
+  const setActiveFontSize = useCanvasStore((state) => state.setActiveFontSize);
   const setActiveColor = useCanvasStore((state) => state.setActiveColor);
   const setActiveThickness = useCanvasStore((state) => state.setActiveThickness);
   const setIsEraser = useCanvasStore((state) => state.setIsEraser);
@@ -75,6 +78,15 @@ export default function ContextualToolbar({
                   key={control.type}
                   value={isEraser}
                   onChange={setIsEraser}
+                  label={control.label}
+                />
+              );
+            case CONTROL_TYPES.FONT_SIZE_SELECTOR:
+              return (
+                <FontSizeSelector
+                  key={control.type}
+                  value={activeFontSize}
+                  onChange={setActiveFontSize}
                   label={control.label}
                 />
               );

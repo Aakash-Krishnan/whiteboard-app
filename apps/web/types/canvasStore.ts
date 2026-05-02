@@ -10,6 +10,7 @@ export type TCanvasState = {
   fillMode: TFillMode;
   dashStyle: TDashStyle;
   arrowHead: TArrowHead;
+  activeFontSize: number;
 };
 
 export type TCanvasActions = {
@@ -25,4 +26,5 @@ export type TCanvasActions = {
   setFillMode: (fillMode: TFillMode) => void;
   setDashStyle: (dashStyle: TDashStyle) => void;
   setArrowHead: (arrowHead: TArrowHead) => void;
+  setActiveFontSize: (fontSize: number) => void;
 };
