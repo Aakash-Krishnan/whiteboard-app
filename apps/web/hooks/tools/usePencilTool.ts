@@ -1,5 +1,7 @@
 import type { TStroke } from "@whiteboard/types";
 import type { DrawContext, ElementRenderer, ToolDefinition, ToolHandler } from "../drawing/types";
+import { historyManager } from "@/history/HistoryManager";
+import { CommitLastElementCommand } from "@/history/commands/CommitLastElementCommand";
 
 const handler: ToolHandler = {
   onDown: (point, { addElement, getState }) => {
@@ -15,6 +17,9 @@ const handler: ToolHandler = {
   },
   onMove: (point, { addPoint }: DrawContext) => {
     addPoint(point);
+  },
+  onUp() {
+    historyManager.execute(new CommitLastElementCommand());
   },
 };
 

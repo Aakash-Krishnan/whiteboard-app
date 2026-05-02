@@ -1,6 +1,8 @@
 import type { TRectangle } from "@whiteboard/types";
 import { FILL_MODES } from "@whiteboard/types/constants/global";
 import type { ElementRenderer, ToolDefinition, ToolHandler } from "../drawing/types";
+import { historyManager } from "@/history/HistoryManager";
+import { CommitLastElementCommand } from "@/history/commands/CommitLastElementCommand";
 
 const handler: ToolHandler = {
   onDown: (point, { addElement, getState }) => {
@@ -23,6 +25,9 @@ const handler: ToolHandler = {
       width: point.x - origin.x,
       height: point.y - origin.y,
     }));
+  },
+  onUp() {
+    historyManager.execute(new CommitLastElementCommand());
   },
 };
 
