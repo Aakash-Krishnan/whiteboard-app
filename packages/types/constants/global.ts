@@ -39,4 +39,14 @@ export const TOOL_CONTROLS = {
       optionsKey: "fillModeOptions",
     },
   ],
+  [TOOLS.CIRCLE]: [
+    { type: CONTROL_TYPES.COLOR_PICKER, label: "Color" },
+    { type: CONTROL_TYPES.WIDTH_SELECTOR, label: "Stroke Width" },
+    {
+      type: CONTROL_TYPES.DROPDOWN,
+      label: "Fill",
+      stateKey: "fillMode",
+      optionsKey: "fillModeOptions",
+    },
+  ],
 } as const;

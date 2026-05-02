@@ -5,7 +5,7 @@ import Toolbar from "@/components/Toolbar";
 import { useCanvas } from "@/hooks/useCanvas";
 import { useDrawing } from "@/hooks/useDrawing";
 import { TOOLS } from "@whiteboard/types/constants/global";
-import { PenIcon, RectangleHorizontalIcon } from "lucide-react";
+import { CircleIcon, PenIcon, RectangleHorizontalIcon } from "lucide-react";
 
 export default function Home() {
   const canvasRef = useCanvas();
@@ -20,6 +20,11 @@ export default function Home() {
             icon={<RectangleHorizontalIcon />}
             tool={TOOLS.RECTANGLE}
             label="Rectangle"
+          />
+          <Toolbar.Tool
+            icon={<CircleIcon />}
+            tool={TOOLS.CIRCLE}
+            label="Circle"
           />
         </Toolbar>
         <ContextualToolbar className="fixed bottom-3 left-1/2 z-10 -translate-x-1/2" />
