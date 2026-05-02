@@ -10,11 +10,12 @@ import {
   Minus,
   PencilLineIcon,
   RectangleHorizontalIcon,
+  TypeIcon,
 } from "lucide-react";
 
 export default function Home() {
   const canvasRef = useCanvas();
-  useDrawing(canvasRef as React.RefObject<HTMLCanvasElement | null>);
+  const { portal } = useDrawing(canvasRef as React.RefObject<HTMLCanvasElement | null>);
 
   return (
     <div className="home-page">
@@ -36,8 +37,10 @@ export default function Home() {
             label="Circle"
           />
           <Toolbar.Tool icon={<Minus />} tool={TOOLS.LINE} label="Line" />
+          <Toolbar.Tool icon={<TypeIcon />} tool={TOOLS.TEXT} label="Text" />
         </Toolbar>
         <ContextualToolbar className="fixed bottom-3 left-1/2 z-10 -translate-x-1/2" />
+        {portal}
         <canvas
           className="bg-[rgba(0,0,0,0.4)]"
           ref={canvasRef}

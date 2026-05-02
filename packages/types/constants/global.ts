@@ -3,6 +3,7 @@ export const TOOLS = {
   RECTANGLE: "rectangle",
   CIRCLE: "circle",
   LINE: "line",
+  TEXT: "text",
 } as const;
 
 export const TOOL_PROPERTIES = {
@@ -13,12 +14,19 @@ export const TOOL_PROPERTIES = {
     bold: 8,
     "extra-bold": 10,
   },
+  fontSize: {
+    small: 14,
+    medium: 20,
+    large: 28,
+    "extra-large": 40,
+  },
   color: "#000000",
 } as const;
 
 export const CONTROL_TYPES = {
   COLOR_PICKER: "color-picker",
   WIDTH_SELECTOR: "width-selector",
+  FONT_SIZE_SELECTOR: "font-size-selector",
   TOGGLE: "toggle",
   DROPDOWN: "dropdown",
 } as const;
@@ -67,9 +75,15 @@ const ERASER_CONTROL = {
   stateKey: "isEraser",
 } as const;
 
+const FONT_SIZE_CONTROL = {
+  type: CONTROL_TYPES.FONT_SIZE_SELECTOR,
+  label: "Font Size",
+} as const;
+
 export const TOOL_CONTROLS = {
   [TOOLS.PENCIL]: [COLOR_CONTROL, WIDTH_CONTROL, ERASER_CONTROL],
   [TOOLS.RECTANGLE]: [COLOR_CONTROL, WIDTH_CONTROL, FILL_CONTROL],
   [TOOLS.CIRCLE]: [COLOR_CONTROL, WIDTH_CONTROL, FILL_CONTROL],
   [TOOLS.LINE]: [COLOR_CONTROL, WIDTH_CONTROL, DASH_CONTROL, ARROW_CONTROL],
+  [TOOLS.TEXT]: [COLOR_CONTROL, FONT_SIZE_CONTROL],
 } as const;

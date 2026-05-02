@@ -12,6 +12,7 @@ export const useCanvasStore = create<TCanvasState & TCanvasActions>((set) => ({
   fillMode: FILL_MODES.OUTLINE,
   dashStyle: DASH_STYLES.SOLID,
   arrowHead: ARROW_HEADS.NONE,
+  activeFontSize: TOOL_PROPERTIES.fontSize.medium,
   addElement: (element: TElement) =>
     set((state) => ({
       elements: [...state.elements, element],
@@ -40,4 +41,5 @@ export const useCanvasStore = create<TCanvasState & TCanvasActions>((set) => ({
   setFillMode: (fillMode) => set({ fillMode }),
   setDashStyle: (dashStyle) => set({ dashStyle }),
   setArrowHead: (arrowHead) => set({ arrowHead }),
+  setActiveFontSize: (activeFontSize) => set({ activeFontSize }),
 }));
