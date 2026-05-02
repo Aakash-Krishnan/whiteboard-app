@@ -1,5 +1,8 @@
 export const TOOLS = {
   PENCIL: "pencil",
+  RECTANGLE: "rectangle",
+  CIRCLE: "circle",
+  LINE: "line",
 } as const;
 
 export const TOOL_PROPERTIES = {
@@ -25,5 +28,15 @@ export const TOOL_CONTROLS = {
     { type: CONTROL_TYPES.COLOR_PICKER, label: "Color" },
     { type: CONTROL_TYPES.WIDTH_SELECTOR, label: "Stroke Width" },
     { type: CONTROL_TYPES.TOGGLE, label: "Eraser", stateKey: "isEraser" },
+  ],
+  [TOOLS.RECTANGLE]: [
+    { type: CONTROL_TYPES.COLOR_PICKER, label: "Color" },
+    { type: CONTROL_TYPES.WIDTH_SELECTOR, label: "Stroke Width" },
+    {
+      type: CONTROL_TYPES.DROPDOWN,
+      label: "Fill",
+      stateKey: "fillMode",
+      optionsKey: "fillModeOptions",
+    },
   ],
 } as const;
