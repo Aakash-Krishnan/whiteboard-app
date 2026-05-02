@@ -11,6 +11,7 @@ export type TUser = {
 type TCommonToolProperties = {
   color?: string;
   thickness: number;
+  fillMode?: "filled" | "outline";
 };
 
 export type TPoint = {
@@ -38,12 +39,12 @@ export type TRectangle = TCommonToolProperties &
     width: number;
     height: number;
     tool: Extract<TTool, "rectangle">;
-    fillMode: "filled" | "outline";
   };
 
-export type TCircle = TCommonToolProperties &
+export type TEllipse = TCommonToolProperties &
   TPoint & {
-    radius: number;
+    radiusX: number;
+    radiusY: number;
     tool: Extract<TTool, "circle">;
   };
 
@@ -53,4 +54,4 @@ export type TLine = TCommonToolProperties &
     tool: Extract<TTool, "line">;
   };
 
-export type TElement = TStroke | TRectangle | TCircle | TLine;
+export type TElement = TStroke | TRectangle | TEllipse | TLine;
