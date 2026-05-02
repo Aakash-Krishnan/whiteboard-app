@@ -1,6 +1,8 @@
 import type { TEllipse } from "@whiteboard/types";
 import { FILL_MODES } from "@whiteboard/types/constants/global";
 import type { ElementRenderer, ToolDefinition, ToolHandler } from "../drawing/types";
+import { historyManager } from "@/history/HistoryManager";
+import { CommitLastElementCommand } from "@/history/commands/CommitLastElementCommand";
 
 const handler: ToolHandler = {
   onDown: (point, { addElement, getState }) => {
@@ -27,6 +29,9 @@ const handler: ToolHandler = {
       radiusX: Math.abs(dx / 2),
       radiusY: Math.abs(dy / 2),
     }));
+  },
+  onUp() {
+    historyManager.execute(new CommitLastElementCommand());
   },
 };
 

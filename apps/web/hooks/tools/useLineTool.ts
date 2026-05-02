@@ -1,6 +1,8 @@
 import type { TLine } from "@whiteboard/types";
 import { ARROW_HEADS, DASH_STYLES } from "@whiteboard/types/constants/global";
 import type { ElementRenderer, ToolDefinition, ToolHandler } from "../drawing/types";
+import { historyManager } from "@/history/HistoryManager";
+import { CommitLastElementCommand } from "@/history/commands/CommitLastElementCommand";
 
 const handler: ToolHandler = {
   onDown: (point, { addElement, getState }) => {
@@ -19,6 +21,9 @@ const handler: ToolHandler = {
   },
   onMove: (point, { updateLastElement }) => {
     updateLastElement((el) => ({ ...el, endPoint: point }));
+  },
+  onUp() {
+    historyManager.execute(new CommitLastElementCommand());
   },
 };
 

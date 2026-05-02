@@ -3,6 +3,8 @@ import { createPortal } from "react-dom";
 import type { TText } from "@whiteboard/types";
 import { useCanvasStore } from "@/store/canvasStore";
 import type { ElementRenderer, ToolDefinition, ToolHandler } from "../drawing/types";
+import { historyManager } from "@/history/HistoryManager";
+import { CommitLastElementCommand } from "@/history/commands/CommitLastElementCommand";
 
 const renderer: ElementRenderer = (ctx, el) => {
   const text = el as TText;
@@ -56,6 +58,7 @@ export function useTextTool(): ToolDefinition & { portal: React.ReactNode } {
             : el,
         ),
       }));
+      historyManager.execute(new CommitLastElementCommand());
     } else {
       setState((state) => ({
         elements: state.elements.filter(

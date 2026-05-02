@@ -9,6 +9,8 @@ import { useLineTool } from "./tools/useLineTool";
 import { usePencilTool } from "./tools/usePencilTool";
 import { useRectangleTool } from "./tools/useRectangleTool";
 import { useTextTool } from "./tools/useTextTool";
+import { historyManager } from "@/history/HistoryManager";
+import { AddElementCommand } from "@/history/commands/AddElementCommand";
 
 export function useDrawing(
   canvasRef: React.RefObject<HTMLCanvasElement | null>,
@@ -60,6 +62,9 @@ export function useDrawing(
         updateLastElement,
         addPoint,
         origin: point,
+        commitElement: (element) => {
+          historyManager.execute(new AddElementCommand(element));
+        },
       };
 
       toolHandlers[getState().activeTool]?.onDown(point, drawCtx);
@@ -68,6 +73,19 @@ export function useDrawing(
 
     const handleMouseUp = (e: MouseEvent) => {
       e.preventDefault();
+      if (isDrawing.current) {
+        const drawCtx: DrawContext = {
+          getState,
+          addElement,
+          updateLastElement,
+          addPoint,
+          origin: originRef.current ?? { x: 0, y: 0 },
+          commitElement: (element) => {
+            historyManager.execute(new AddElementCommand(element));
+          },
+        };
+        toolHandlers[getState().activeTool]?.onUp?.(drawCtx);
+      }
       isDrawing.current = false;
       originRef.current = null;
     };
@@ -84,6 +102,9 @@ export function useDrawing(
         updateLastElement,
         addPoint,
         origin: originRef.current,
+        commitElement: (element) => {
+          historyManager.execute(new AddElementCommand(element));
+        },
       };
 
       toolHandlers[getState().activeTool]?.onMove(point, drawCtx);
@@ -112,6 +133,18 @@ export function useDrawing(
       canvas.removeEventListener("mouseleave", handleMouseLeave);
     };
   }, [canvasRef, addElement, updateLastElement, addPoint, getState, toolHandlers, elementRenderers]);
+
+  // Redraw when elements change externally (undo/redo) while not actively drawing
+  useEffect(() => {
+    return useCanvasStore.subscribe((state, prev) => {
+      if (state.elements !== prev.elements && !isDrawing.current) {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        reDraw(ctx, state.elements, elementRenderers);
+      }
+    });
+  }, [canvasRef, elementRenderers]);
 
   return { portal: text.portal };
 }

@@ -7,11 +7,13 @@ export type DrawContext = {
   updateLastElement: (updater: (el: TElement) => TElement) => void;
   addPoint: (point: TPoint) => void;
   origin: TPoint;
+  commitElement: (element: TElement) => void;
 };
 
 export type ToolHandler = {
   onDown: (point: TPoint, ctx: DrawContext) => void;
   onMove: (point: TPoint, ctx: DrawContext) => void;
+  onUp?: (ctx: DrawContext) => void;
 };
 
 export type ElementRenderer = (

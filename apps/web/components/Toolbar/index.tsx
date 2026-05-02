@@ -6,6 +6,7 @@ import { TCanvasActions, TCanvasState } from "@/types/canvasStore";
 
 import Separator from "./Separator";
 import Tool from "./Tool";
+import { UndoRedo } from "./UndoRedo";
 import { TooltipProvider } from "../ui/tooltip";
 import { cn } from "@/lib/utils";
 
@@ -48,5 +49,6 @@ export default function Toolbar({
 
 Toolbar.Separator = Separator;
 Toolbar.Tool = Tool;
+Toolbar.UndoRedo = UndoRedo;
 
 export { Toolbar };
