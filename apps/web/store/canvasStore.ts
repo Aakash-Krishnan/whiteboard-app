@@ -1,29 +1,32 @@
 import { TCanvasActions, TCanvasState } from "@/types/canvasStore";
-import { TPoint, TStroke, TTool } from "@whiteboard/types";
+import { TElement, TPoint, TTool } from "@whiteboard/types";
 import { create } from "zustand";
 import { TOOL_PROPERTIES, TOOLS } from "@whiteboard/types/constants/global";
 
 export const useCanvasStore = create<TCanvasState & TCanvasActions>((set) => ({
-  strokes: [],
+  elements: [],
   activeColor: TOOL_PROPERTIES.color,
   activeTool: TOOLS.PENCIL,
   activeThickness: TOOL_PROPERTIES.width.thin,
   isEraser: false,
-  addStroke: (stroke: TStroke) =>
+  fillMode: "outline",
+  addElement: (element: TElement) =>
     set((state) => ({
-      strokes: [...state.strokes, stroke],
+      elements: [...state.elements, element],
+    })),
+  updateLastElement: (updater: (element: TElement) => TElement) =>
+    set((state) => ({
+      elements: state.elements.map((el, idx) =>
+        idx === state.elements.length - 1 ? updater(el) : el,
+      ),
     })),
   addPoint: (point: TPoint) =>
     set((state) => ({
-      strokes: state.strokes.map((stroke, idx) => {
-        if (idx === state.strokes.length - 1) {
-          return {
-            ...stroke,
-            path: [...stroke.path, point],
-          };
-        } else {
-          return stroke;
+      elements: state.elements.map((el, idx) => {
+        if (idx === state.elements.length - 1 && el.tool === "pencil") {
+          return { ...el, path: [...el.path, point] };
         }
+        return el;
       }),
     })),
   setActiveColor: (color: string) => set({ activeColor: color }),
@@ -32,4 +35,5 @@ export const useCanvasStore = create<TCanvasState & TCanvasActions>((set) => ({
     thickness: (typeof TOOL_PROPERTIES.width)[keyof typeof TOOL_PROPERTIES.width],
   ) => set({ activeThickness: thickness }),
   setIsEraser: (isEraser: boolean) => set({ isEraser }),
+  setFillMode: (fillMode: "filled" | "outline") => set({ fillMode }),
 }));

@@ -1,115 +1,185 @@
 import { useEffect, useRef } from "react";
-import { TPoint, TStroke } from "@whiteboard/types";
+import { TElement, TPoint, TRectangle, TStroke } from "@whiteboard/types";
 import { TOOLS } from "@whiteboard/types/constants/global";
 import { useCanvasStore } from "@/store/canvasStore";
 
-function getRect(canvas: HTMLCanvasElement, e: MouseEvent): TPoint {
-  const rect = canvas.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
+type DrawContext = {
+  getState: typeof useCanvasStore.getState;
+  addElement: (el: TElement) => void;
+  updateLastElement: (updater: (el: TElement) => TElement) => void;
+  addPoint: (point: TPoint) => void;
+  origin: TPoint;
+};
 
-  return { x, y };
-}
+type ToolHandler = {
+  onDown: (point: TPoint, ctx: DrawContext) => void;
+  onMove: (point: TPoint, ctx: DrawContext) => void;
+};
 
-function reDraw(ctx: CanvasRenderingContext2D | null, strokes: TStroke[]) {
-  if (!ctx) return;
+const toolHandlers: Partial<Record<string, ToolHandler>> = {
+  [TOOLS.PENCIL]: {
+    onDown: (point, { addElement, getState }) => {
+      const { activeColor, activeThickness, isEraser, activeTool } =
+        getState();
+      const stroke: TStroke = {
+        path: [point],
+        color: activeColor,
+        tool: activeTool as TStroke["tool"],
+        thickness: activeThickness,
+        isEraser,
+      };
+      addElement(stroke);
+    },
+    onMove: (point, { addPoint }) => {
+      addPoint(point);
+    },
+  },
 
-  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  [TOOLS.RECTANGLE]: {
+    onDown: (point, { addElement, getState }) => {
+      const { activeColor, activeThickness, fillMode, activeTool } = getState();
+      const rect: TRectangle = {
+        x: point.x,
+        y: point.y,
+        width: 0,
+        height: 0,
+        color: activeColor,
+        thickness: activeThickness,
+        tool: activeTool as TRectangle["tool"],
+        fillMode,
+      };
+      addElement(rect);
+    },
+    onMove: (point, { updateLastElement, origin }) => {
+      updateLastElement((el) => ({
+        ...el,
+        width: point.x - origin.x,
+        height: point.y - origin.y,
+      }));
+    },
+  },
+};
 
-  strokes.forEach((stroke) => {
-    const { path } = stroke;
+// --- renderers ---
+
+type ElementRenderer = (ctx: CanvasRenderingContext2D, el: TElement) => void;
+
+const elementRenderers: Partial<Record<string, ElementRenderer>> = {
+  [TOOLS.PENCIL]: (ctx, el) => {
+    const stroke = el as TStroke;
     ctx.globalCompositeOperation = stroke.isEraser
       ? "destination-out"
       : "source-over";
-    ctx.strokeStyle = stroke?.color ?? "rgba(0, 0, 0, 1)";
-    ctx.lineWidth = stroke.thickness;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
 
-    path.forEach((point, idx) => {
+    stroke.path.forEach((point, idx) => {
       const { x, y } = point;
-      if (idx > 0 && idx !== path.length - 1) {
-        const m2 = {
-          x: ((path[idx + 1]?.x ?? 0) + x) / 2,
-          y: ((path[idx + 1]?.y ?? 0) + y) / 2,
-        };
-
-        ctx.quadraticCurveTo(x, y, m2.x, m2.y);
-      } else if (idx === 0) {
+      if (idx === 0) {
         ctx.beginPath();
-        ctx.lineCap = "round";
-        ctx.lineJoin = "round";
         ctx.moveTo(x, y);
+      } else if (idx < stroke.path.length - 1) {
+        const next = stroke.path[idx + 1]!;
+        const m2 = { x: (next.x + x) / 2, y: (next.y + y) / 2 };
+        ctx.quadraticCurveTo(x, y, m2.x, m2.y);
       } else {
         ctx.lineTo(x, y);
       }
     });
 
     ctx.stroke();
-  });
+    ctx.globalCompositeOperation = "source-over";
+  },
 
-  ctx.globalCompositeOperation = "source-over";
+  [TOOLS.RECTANGLE]: (ctx, el) => {
+    const rect = el as TRectangle;
+    ctx.globalCompositeOperation = "source-over";
+    if (rect.fillMode === "filled") {
+      ctx.fillStyle = rect.color ?? "rgba(0,0,0,1)";
+      ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
+    } else {
+      ctx.strokeRect(rect.x, rect.y, rect.width, rect.height);
+    }
+  },
+};
+
+function drawElement(ctx: CanvasRenderingContext2D, element: TElement) {
+  ctx.strokeStyle = element.color ?? "rgba(0,0,0,1)";
+  ctx.lineWidth = element.thickness;
+  elementRenderers[element.tool]?.(ctx, element);
 }
+
+function reDraw(ctx: CanvasRenderingContext2D | null, elements: TElement[]) {
+  if (!ctx) return;
+  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  elements.forEach((el) => drawElement(ctx, el));
+}
+
+// --- hook ---
 
 export function useDrawing(
   canvasRef: React.RefObject<HTMLCanvasElement | null>,
 ): void {
   const { getState } = useCanvasStore;
+  const addElement = useCanvasStore((state) => state.addElement);
+  const updateLastElement = useCanvasStore((state) => state.updateLastElement);
   const addPoint = useCanvasStore((state) => state.addPoint);
-  const addStroke = useCanvasStore((state) => state.addStroke);
   const isDrawing = useRef(false);
+  const originRef = useRef<TPoint | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
     const ctx = canvas.getContext("2d");
 
-    // Start drawing
     const handleMouseDown = (e: MouseEvent) => {
       e.preventDefault();
       isDrawing.current = true;
-      const { x, y } = getRect(canvas, e);
+      const point = getPointFromEvent(canvas, e);
+      originRef.current = point;
 
-      const activeTool = getState().activeTool;
+      const drawCtx: DrawContext = {
+        getState,
+        addElement,
+        updateLastElement,
+        addPoint,
+        origin: point,
+      };
 
-      if (activeTool === TOOLS.PENCIL)
-        addStroke({
-          path: [{ x, y }],
-          color: getState().activeColor,
-          tool: activeTool,
-          thickness: getState().activeThickness,
-          isEraser: getState().isEraser,
-        });
-
-      reDraw(ctx, getState().strokes);
+      toolHandlers[getState().activeTool]?.onDown(point, drawCtx);
+      reDraw(ctx, getState().elements);
     };
 
-    // Stop drawing
     const handleMouseUp = (e: MouseEvent) => {
       e.preventDefault();
-
       isDrawing.current = false;
+      originRef.current = null;
     };
 
     let rafId: number;
-    // Move drawing
     const handleMouseMove = (e: MouseEvent) => {
       e.preventDefault();
-      if (!isDrawing.current) return;
+      if (!isDrawing.current || !originRef.current) return;
 
-      const { x, y } = getRect(canvas, e);
+      const point = getPointFromEvent(canvas, e);
+      const drawCtx: DrawContext = {
+        getState,
+        addElement,
+        updateLastElement,
+        addPoint,
+        origin: originRef.current,
+      };
 
-      addPoint({ x, y });
+      toolHandlers[getState().activeTool]?.onMove(point, drawCtx);
 
       cancelAnimationFrame(rafId);
-
-      rafId = requestAnimationFrame(() => reDraw(ctx, getState().strokes));
+      rafId = requestAnimationFrame(() => reDraw(ctx, getState().elements));
     };
 
-    // Leave drawing + Stop drawing
     const handleMouseLeave = (e: MouseEvent) => {
       e.preventDefault();
-
       isDrawing.current = false;
+      originRef.current = null;
     };
 
     canvas.addEventListener("mousedown", handleMouseDown);
@@ -123,5 +193,10 @@ export function useDrawing(
       canvas.removeEventListener("mousemove", handleMouseMove);
       canvas.removeEventListener("mouseleave", handleMouseLeave);
     };
-  }, [canvasRef, addStroke, addPoint, getState]);
+  }, [canvasRef, addElement, updateLastElement, addPoint, getState]);
+}
+
+function getPointFromEvent(canvas: HTMLCanvasElement, e: MouseEvent): TPoint {
+  const rect = canvas.getBoundingClientRect();
+  return { x: e.clientX - rect.left, y: e.clientY - rect.top };
 }

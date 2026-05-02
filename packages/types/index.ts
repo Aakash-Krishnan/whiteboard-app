@@ -38,6 +38,7 @@ export type TRectangle = TCommonToolProperties &
     width: number;
     height: number;
     tool: Extract<TTool, "rectangle">;
+    fillMode: "filled" | "outline";
   };
 
 export type TCircle = TCommonToolProperties &
