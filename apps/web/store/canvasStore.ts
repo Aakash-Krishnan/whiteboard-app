@@ -1,7 +1,7 @@
 import { TCanvasActions, TCanvasState } from "@/types/canvasStore";
 import { TElement, TPoint, TTool } from "@whiteboard/types";
 import { create } from "zustand";
-import { TOOL_PROPERTIES, TOOLS } from "@whiteboard/types/constants/global";
+import { ARROW_HEADS, DASH_STYLES, FILL_MODES, TOOL_PROPERTIES, TOOLS } from "@whiteboard/types/constants/global";
 
 export const useCanvasStore = create<TCanvasState & TCanvasActions>((set) => ({
   elements: [],
@@ -9,7 +9,9 @@ export const useCanvasStore = create<TCanvasState & TCanvasActions>((set) => ({
   activeTool: TOOLS.PENCIL,
   activeThickness: TOOL_PROPERTIES.width.thin,
   isEraser: false,
-  fillMode: "outline",
+  fillMode: FILL_MODES.OUTLINE,
+  dashStyle: DASH_STYLES.SOLID,
+  arrowHead: ARROW_HEADS.NONE,
   addElement: (element: TElement) =>
     set((state) => ({
       elements: [...state.elements, element],
@@ -35,5 +37,7 @@ export const useCanvasStore = create<TCanvasState & TCanvasActions>((set) => ({
     thickness: (typeof TOOL_PROPERTIES.width)[keyof typeof TOOL_PROPERTIES.width],
   ) => set({ activeThickness: thickness }),
   setIsEraser: (isEraser: boolean) => set({ isEraser }),
-  setFillMode: (fillMode: "filled" | "outline") => set({ fillMode }),
+  setFillMode: (fillMode) => set({ fillMode }),
+  setDashStyle: (dashStyle) => set({ dashStyle }),
+  setArrowHead: (arrowHead) => set({ arrowHead }),
 }));

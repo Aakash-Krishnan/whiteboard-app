@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
-import { TEllipse, TElement, TPoint, TRectangle, TStroke } from "@whiteboard/types";
-import { TOOLS } from "@whiteboard/types/constants/global";
+import type { TEllipse, TElement, TLine, TPoint, TRectangle, TStroke } from "@whiteboard/types";
+import { ARROW_HEADS, DASH_STYLES, FILL_MODES, TOOLS } from "@whiteboard/types/constants/global";
 import { useCanvasStore } from "@/store/canvasStore";
 
 type DrawContext = {
@@ -63,6 +63,26 @@ const toolHandlers: Partial<Record<string, ToolHandler>> = {
     },
   },
 
+  [TOOLS.LINE]: {
+    onDown: (point, { addElement, getState }) => {
+      const { activeColor, activeThickness, dashStyle, arrowHead, activeTool } = getState();
+      const line: TLine = {
+        x: point.x,
+        y: point.y,
+        endPoint: { x: point.x, y: point.y },
+        color: activeColor,
+        thickness: activeThickness,
+        tool: activeTool as TLine["tool"],
+        dashStyle,
+        arrowHead,
+      };
+      addElement(line);
+    },
+    onMove: (point, { updateLastElement }) => {
+      updateLastElement((el) => ({ ...el, endPoint: point }));
+    },
+  },
+
   [TOOLS.RECTANGLE]: {
     onDown: (point, { addElement, getState }) => {
       const { activeColor, activeThickness, fillMode, activeTool } = getState();
@@ -119,12 +139,45 @@ const elementRenderers: Partial<Record<string, ElementRenderer>> = {
     ctx.globalCompositeOperation = "source-over";
   },
 
+  [TOOLS.LINE]: (ctx, el) => {
+    const line = el as TLine;
+    ctx.globalCompositeOperation = "source-over";
+
+    const dashMap = { [DASH_STYLES.SOLID]: [], [DASH_STYLES.DASHED]: [8, 4], [DASH_STYLES.DOTTED]: [2, 4] } as const;
+    ctx.setLineDash([...dashMap[line.dashStyle]]);
+
+    ctx.beginPath();
+    ctx.moveTo(line.x, line.y);
+    ctx.lineTo(line.endPoint.x, line.endPoint.y);
+    ctx.stroke();
+
+    const angle = Math.atan2(line.endPoint.y - line.y, line.endPoint.x - line.x);
+    const arrowLen = Math.max(12, line.thickness * 4);
+    const spread = Math.PI / 7;
+
+    function drawChevron(tipX: number, tipY: number, dir: number) {
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.moveTo(tipX - arrowLen * Math.cos(dir - spread), tipY - arrowLen * Math.sin(dir - spread));
+      ctx.lineTo(tipX, tipY);
+      ctx.lineTo(tipX - arrowLen * Math.cos(dir + spread), tipY - arrowLen * Math.sin(dir + spread));
+      ctx.stroke();
+    }
+
+    if (line.arrowHead === ARROW_HEADS.START || line.arrowHead === ARROW_HEADS.BOTH)
+      drawChevron(line.x, line.y, angle + Math.PI);
+    if (line.arrowHead === ARROW_HEADS.BOTH)
+      drawChevron(line.endPoint.x, line.endPoint.y, angle);
+
+    ctx.setLineDash([]);
+  },
+
   [TOOLS.CIRCLE]: (ctx, el) => {
     const ellipse = el as TEllipse;
     ctx.globalCompositeOperation = "source-over";
     ctx.beginPath();
     ctx.ellipse(ellipse.x, ellipse.y, ellipse.radiusX, ellipse.radiusY, 0, 0, Math.PI * 2);
-    if (ellipse.fillMode === "filled") {
+    if (ellipse.fillMode === FILL_MODES.FILLED) {
       ctx.fillStyle = ellipse.color ?? "rgba(0,0,0,1)";
       ctx.fill();
     } else {
@@ -135,7 +188,7 @@ const elementRenderers: Partial<Record<string, ElementRenderer>> = {
   [TOOLS.RECTANGLE]: (ctx, el) => {
     const rect = el as TRectangle;
     ctx.globalCompositeOperation = "source-over";
-    if (rect.fillMode === "filled") {
+    if (rect.fillMode === FILL_MODES.FILLED) {
       ctx.fillStyle = rect.color ?? "rgba(0,0,0,1)";
       ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
     } else {

@@ -1,4 +1,4 @@
-import { TElement, TPoint, TTool } from "@whiteboard/types";
+import { TArrowHead, TDashStyle, TElement, TFillMode, TPoint, TTool } from "@whiteboard/types";
 import { TOOL_PROPERTIES } from "@whiteboard/types/constants/global";
 
 export type TCanvasState = {
@@ -7,7 +7,9 @@ export type TCanvasState = {
   activeTool: TTool;
   activeThickness: number;
   isEraser: boolean;
-  fillMode: "filled" | "outline";
+  fillMode: TFillMode;
+  dashStyle: TDashStyle;
+  arrowHead: TArrowHead;
 };
 
 export type TCanvasActions = {
@@ -20,5 +22,7 @@ export type TCanvasActions = {
     thickness: (typeof TOOL_PROPERTIES.width)[keyof typeof TOOL_PROPERTIES.width],
   ) => void;
   setIsEraser: (isEraser: boolean) => void;
-  setFillMode: (fillMode: "filled" | "outline") => void;
+  setFillMode: (fillMode: TFillMode) => void;
+  setDashStyle: (dashStyle: TDashStyle) => void;
+  setArrowHead: (arrowHead: TArrowHead) => void;
 };
