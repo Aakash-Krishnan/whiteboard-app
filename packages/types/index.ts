@@ -1,4 +1,4 @@
-import { CONTROL_TYPES, TOOLS } from "./constants/global";
+import { ARROW_HEADS, CONTROL_TYPES, DASH_STYLES, FILL_MODES, TOOLS } from "./constants/global";
 
 export type TTool = (typeof TOOLS)[keyof typeof TOOLS];
 
@@ -8,10 +8,14 @@ export type TUser = {
   cursorColor: string;
 };
 
+export type TFillMode = (typeof FILL_MODES)[keyof typeof FILL_MODES];
+export type TDashStyle = (typeof DASH_STYLES)[keyof typeof DASH_STYLES];
+export type TArrowHead = (typeof ARROW_HEADS)[keyof typeof ARROW_HEADS];
+
 type TCommonToolProperties = {
   color?: string;
   thickness: number;
-  fillMode?: "filled" | "outline";
+  fillMode?: TFillMode;
 };
 
 export type TPoint = {
@@ -52,6 +56,8 @@ export type TLine = TCommonToolProperties &
   TPoint & {
     endPoint: TPoint;
     tool: Extract<TTool, "line">;
+    dashStyle: TDashStyle;
+    arrowHead: TArrowHead;
   };
 
 export type TElement = TStroke | TRectangle | TEllipse | TLine;

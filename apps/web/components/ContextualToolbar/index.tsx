@@ -9,6 +9,7 @@ import {
 } from "@whiteboard/types/constants/global";
 import React from "react";
 import ColorPicker from "./ColorPicker";
+import DropdownControl from "./DropdownControl";
 import EraserToggle from "./EraserToggle";
 import WidthSelector from "./WidthSelector";
 
@@ -21,9 +22,21 @@ export default function ContextualToolbar({
   const activeColor = useCanvasStore((state) => state.activeColor);
   const activeThickness = useCanvasStore((state) => state.activeThickness);
   const isEraser = useCanvasStore((state) => state.isEraser);
+  const fillMode = useCanvasStore((state) => state.fillMode);
+  const dashStyle = useCanvasStore((state) => state.dashStyle);
+  const arrowHead = useCanvasStore((state) => state.arrowHead);
   const setActiveColor = useCanvasStore((state) => state.setActiveColor);
   const setActiveThickness = useCanvasStore((state) => state.setActiveThickness);
   const setIsEraser = useCanvasStore((state) => state.setIsEraser);
+  const setFillMode = useCanvasStore((state) => state.setFillMode);
+  const setDashStyle = useCanvasStore((state) => state.setDashStyle);
+  const setArrowHead = useCanvasStore((state) => state.setArrowHead);
+
+  const dropdownState: Record<string, { value: string; onChange: (v: string) => void }> = {
+    fillMode: { value: fillMode, onChange: (v) => setFillMode(v as typeof fillMode) },
+    dashStyle: { value: dashStyle, onChange: (v) => setDashStyle(v as typeof dashStyle) },
+    arrowHead: { value: arrowHead, onChange: (v) => setArrowHead(v as typeof arrowHead) },
+  };
 
   const controls =
     (TOOL_CONTROLS as Record<string, typeof TOOL_CONTROLS[keyof typeof TOOL_CONTROLS]>)[activeTool] ?? [];
@@ -65,6 +78,22 @@ export default function ContextualToolbar({
                   label={control.label}
                 />
               );
+            case CONTROL_TYPES.DROPDOWN: {
+              const stateKey = (control as { stateKey?: string }).stateKey;
+              const optionsKey = (control as { optionsKey?: string }).optionsKey;
+              if (!stateKey || !optionsKey) return null;
+              const state = dropdownState[stateKey];
+              if (!state) return null;
+              return (
+                <DropdownControl
+                  key={stateKey}
+                  label={control.label}
+                  optionsKey={optionsKey}
+                  value={state.value}
+                  onChange={state.onChange}
+                />
+              );
+            }
             default:
               return null;
           }
