@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { TText } from "@whiteboard/types";
 import { useCanvasStore } from "@/store/canvasStore";
@@ -106,31 +106,33 @@ export function useTextTool(): ToolDefinition & { portal: React.ReactNode } {
     onMove: () => {},
   };
 
-  const portal =
-    typeof document !== "undefined"
-      ? createPortal(
-          <textarea
-            ref={textareaRef}
-            className="fixed z-50 resize-none overflow-hidden border-none bg-transparent outline-none"
-            style={{ display: "none", minWidth: 120, minHeight: 40 }}
-            onBlur={commit}
-            onKeyDown={(e) => {
-              if (e.key === "Escape") {
-                e.preventDefault();
-                discard();
-              }
-            }}
-            onChange={(e) => {
-              const el = e.currentTarget;
-              el.style.width = "auto";
-              el.style.height = "auto";
-              el.style.width = `${el.scrollWidth}px`;
-              el.style.height = `${el.scrollHeight}px`;
-            }}
-          />,
-          document.body,
-        )
-      : null;
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  const portal = mounted
+    ? createPortal(
+        <textarea
+          ref={textareaRef}
+          className="fixed z-50 resize-none overflow-hidden border-none bg-transparent outline-none"
+          style={{ display: "none", minWidth: 120, minHeight: 40 }}
+          onBlur={commit}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") {
+              e.preventDefault();
+              discard();
+            }
+          }}
+          onChange={(e) => {
+            const el = e.currentTarget;
+            el.style.width = "auto";
+            el.style.height = "auto";
+            el.style.width = `${el.scrollWidth}px`;
+            el.style.height = `${el.scrollHeight}px`;
+          }}
+        />,
+        document.body,
+      )
+    : null;
 
   return { handler, renderer, portal };
 }
