@@ -4,6 +4,7 @@ export const TOOLS = {
   CIRCLE: "circle",
   LINE: "line",
   TEXT: "text",
+  STICKY: "sticky",
 } as const;
 
 export const TOOL_PROPERTIES = {
@@ -86,4 +87,5 @@ export const TOOL_CONTROLS = {
   [TOOLS.CIRCLE]: [COLOR_CONTROL, WIDTH_CONTROL, FILL_CONTROL],
   [TOOLS.LINE]: [COLOR_CONTROL, WIDTH_CONTROL, DASH_CONTROL, ARROW_CONTROL],
   [TOOLS.TEXT]: [COLOR_CONTROL, FONT_SIZE_CONTROL],
+  [TOOLS.STICKY]: [],
 } as const;

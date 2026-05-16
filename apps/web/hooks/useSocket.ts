@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { io } from "socket.io-client";
-import type { TElement } from "@whiteboard/types";
+import type { TElement, TStickyNote } from "@whiteboard/types";
 import { useCanvasStore } from "@/store/canvasStore";
 import { historyManager } from "@/history/HistoryManager";
 
@@ -31,15 +31,33 @@ function buildUserList(usersRef: React.MutableRefObject<Record<string, UserMeta>
   }));
 }
 
+type StickyCallbacks = {
+  onStickyAdd?: (note: TStickyNote) => void;
+  onStickyMove?: (payload: { id: string; x: number; y: number }) => void;
+  onStickyEdit?: (payload: { id: string; text: string }) => void;
+  onStickyColor?: (payload: { id: string; bgColor: string }) => void;
+  onStickyDelete?: (payload: { id: string }) => void;
+};
+
 export function useSocket(
   onCursorMove: (cursor: CursorInfo) => void,
   onUserLeft: (userId: string) => void,
   onUsersChange: (users: UserInfo[]) => void,
-): { emitCursor: (x: number, y: number) => void } {
+  stickyCallbacks: StickyCallbacks = {},
+): {
+  emitCursor: (x: number, y: number) => void;
+  emitStickyAdd: (note: TStickyNote) => void;
+  emitStickyMove: (id: string, x: number, y: number) => void;
+  emitStickyEdit: (id: string, text: string) => void;
+  emitStickyColor: (id: string, bgColor: string) => void;
+  emitStickyDelete: (id: string) => void;
+} {
   const userIdRef = useRef(crypto.randomUUID());
   const addElement = useCanvasStore((state) => state.addElement);
   const usersRef = useRef<Record<string, UserMeta>>({});
   const socketRef = useRef<ReturnType<typeof io> | null>(null);
+  const stickyCallbacksRef = useRef(stickyCallbacks);
+  stickyCallbacksRef.current = stickyCallbacks;
 
   useEffect(() => {
     const socket = io(SERVER_URL);
@@ -51,8 +69,11 @@ export function useSocket(
     // Sync full canvas state + build users map when joining
     socket.on(
       "room-state",
-      ({ elements, users }: { elements: TElement[]; users: { id: string; name: string; color: string }[] }) => {
+      ({ elements, stickies, users }: { elements: TElement[]; stickies: TStickyNote[]; users: { id: string; name: string; color: string }[] }) => {
         useCanvasStore.setState({ elements });
+        if (stickies?.length) {
+          stickies.forEach((note: TStickyNote) => stickyCallbacksRef.current.onStickyAdd?.(note));
+        }
         users.forEach((u) => {
           if (u.id !== userId) usersRef.current[u.id] = { name: u.name, color: u.color };
         });
@@ -123,6 +144,22 @@ export function useSocket(
       onUsersChange(buildUserList(usersRef));
     });
 
+    socket.on("sticky:add", ({ note }: { note: TStickyNote }) => {
+      stickyCallbacksRef.current.onStickyAdd?.(note);
+    });
+    socket.on("sticky:move", (payload: { id: string; x: number; y: number }) => {
+      stickyCallbacksRef.current.onStickyMove?.(payload);
+    });
+    socket.on("sticky:edit", (payload: { id: string; text: string }) => {
+      stickyCallbacksRef.current.onStickyEdit?.(payload);
+    });
+    socket.on("sticky:color", (payload: { id: string; bgColor: string }) => {
+      stickyCallbacksRef.current.onStickyColor?.(payload);
+    });
+    socket.on("sticky:delete", (payload: { id: string }) => {
+      stickyCallbacksRef.current.onStickyDelete?.(payload);
+    });
+
     return () => {
       socket.disconnect();
       socketRef.current = null;
@@ -140,5 +177,21 @@ export function useSocket(
     });
   };
 
-  return { emitCursor };
+  const emitStickyAdd = (note: TStickyNote) => {
+    socketRef.current?.emit("sticky:add", { roomId: ROOM_ID, note });
+  };
+  const emitStickyMove = (id: string, x: number, y: number) => {
+    socketRef.current?.emit("sticky:move", { roomId: ROOM_ID, id, x, y });
+  };
+  const emitStickyEdit = (id: string, text: string) => {
+    socketRef.current?.emit("sticky:edit", { roomId: ROOM_ID, id, text });
+  };
+  const emitStickyColor = (id: string, bgColor: string) => {
+    socketRef.current?.emit("sticky:color", { roomId: ROOM_ID, id, bgColor });
+  };
+  const emitStickyDelete = (id: string) => {
+    socketRef.current?.emit("sticky:delete", { roomId: ROOM_ID, id });
+  };
+
+  return { emitCursor, emitStickyAdd, emitStickyMove, emitStickyEdit, emitStickyColor, emitStickyDelete };
 }

@@ -69,4 +69,14 @@ export type TText = TCommonToolProperties &
     tool: Extract<TTool, "text">;
   };
 
+export type TStickyNote = {
+  id: string;
+  x: number;
+  y: number;
+  text: string;
+  bgColor: string;
+  width: number;
+  height: number;
+};
+
 export type TElement = TStroke | TRectangle | TEllipse | TLine | TText;
