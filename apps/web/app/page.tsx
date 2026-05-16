@@ -4,6 +4,7 @@ import ContextualToolbar from "@/components/ContextualToolbar";
 import Toolbar from "@/components/Toolbar";
 import { useCanvas } from "@/hooks/useCanvas";
 import { useDrawing } from "@/hooks/useDrawing";
+import { useSocket } from "@/hooks/useSocket";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
 import { useEffect } from "react";
 import { TOOLS } from "@whiteboard/types/constants/global";
@@ -19,6 +20,7 @@ export default function Home() {
   const canvasRef = useCanvas();
   const { portal } = useDrawing(canvasRef as React.RefObject<HTMLCanvasElement | null>);
   const { undo, redo } = useUndoRedo();
+  useSocket();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
