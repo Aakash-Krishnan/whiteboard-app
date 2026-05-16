@@ -42,4 +42,5 @@ export const useCanvasStore = create<TCanvasState & TCanvasActions>((set) => ({
   setDashStyle: (dashStyle) => set({ dashStyle }),
   setArrowHead: (arrowHead) => set({ arrowHead }),
   setActiveFontSize: (activeFontSize) => set({ activeFontSize }),
+  setElements: (elements: TElement[]) => set({ elements }),
 }));

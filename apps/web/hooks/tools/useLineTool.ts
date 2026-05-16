@@ -8,6 +8,7 @@ const handler: ToolHandler = {
   onDown: (point, { addElement, getState }) => {
     const { activeColor, activeThickness, dashStyle, arrowHead, activeTool } = getState();
     const line: TLine = {
+      id: crypto.randomUUID(),
       x: point.x,
       y: point.y,
       endPoint: { x: point.x, y: point.y },

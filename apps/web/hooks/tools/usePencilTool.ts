@@ -7,6 +7,7 @@ const handler: ToolHandler = {
   onDown: (point, { addElement, getState }) => {
     const { activeColor, activeThickness, isEraser, activeTool } = getState();
     const stroke: TStroke = {
+      id: crypto.randomUUID(),
       path: [point],
       color: activeColor,
       tool: activeTool as TStroke["tool"],

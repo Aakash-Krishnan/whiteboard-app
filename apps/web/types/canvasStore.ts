@@ -27,4 +27,5 @@ export type TCanvasActions = {
   setDashStyle: (dashStyle: TDashStyle) => void;
   setArrowHead: (arrowHead: TArrowHead) => void;
   setActiveFontSize: (fontSize: number) => void;
+  setElements: (elements: TElement[]) => void;
 };

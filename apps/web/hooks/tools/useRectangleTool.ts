@@ -8,6 +8,7 @@ const handler: ToolHandler = {
   onDown: (point, { addElement, getState }) => {
     const { activeColor, activeThickness, fillMode, activeTool } = getState();
     const rect: TRectangle = {
+      id: crypto.randomUUID(),
       x: point.x,
       y: point.y,
       width: 0,
