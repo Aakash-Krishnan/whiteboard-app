@@ -9,6 +9,11 @@ import { registerUndo } from "./handlers/undo.js";
 import { registerRedo } from "./handlers/redo.js";
 import { registerCursorMove } from "./handlers/cursorMove.js";
 import { registerDisconnect } from "./handlers/disconnect.js";
+import { registerStickyAdd } from "./handlers/stickyAdd.js";
+import { registerStickyMove } from "./handlers/stickyMove.js";
+import { registerStickyEdit } from "./handlers/stickyEdit.js";
+import { registerStickyColor } from "./handlers/stickyColor.js";
+import { registerStickyDelete } from "./handlers/stickyDelete.js";
 
 const app = express();
 app.use(cors());
@@ -30,6 +35,11 @@ io.on("connection", (socket) => {
   registerRedo(io, socket);
   registerCursorMove(io, socket);
   registerDisconnect(io, socket);
+  registerStickyAdd(io, socket);
+  registerStickyMove(io, socket);
+  registerStickyEdit(io, socket);
+  registerStickyColor(io, socket);
+  registerStickyDelete(io, socket);
 });
 
 const PORT = process.env.PORT ?? 3001;

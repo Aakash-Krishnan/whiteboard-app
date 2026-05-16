@@ -1,4 +1,4 @@
-import type { TElement } from "@whiteboard/types";
+import type { TElement, TStickyNote } from "@whiteboard/types";
 
 export type RoomUser = {
   id: string;
@@ -9,6 +9,7 @@ export type RoomUser = {
 export type Room = {
   users: RoomUser[];
   elements: TElement[];
+  stickies: TStickyNote[];
   undoStacks: Record<string, string[]>;   // userId → element IDs they drew
   redoStacks: Record<string, TElement[]>; // userId → elements removed by undo
 };
@@ -23,7 +24,7 @@ export const rooms = new Map<string, Room>();
 
 export function getOrCreateRoom(roomId: string): Room {
   if (!rooms.has(roomId)) {
-    rooms.set(roomId, { users: [], elements: [], undoStacks: {}, redoStacks: {} });
+    rooms.set(roomId, { users: [], elements: [], stickies: [], undoStacks: {}, redoStacks: {} });
   }
   return rooms.get(roomId)!;
 }

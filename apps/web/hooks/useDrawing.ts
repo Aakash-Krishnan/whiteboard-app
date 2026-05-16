@@ -35,7 +35,7 @@ export function useDrawing(
     [TOOLS.CIRCLE]: ellipse.handler,
     [TOOLS.LINE]: line.handler,
     [TOOLS.TEXT]: text.handler,
-  }), [pencil.handler, rectangle.handler, ellipse.handler, line.handler, text.handler]);
+  }) as Partial<Record<import("@whiteboard/types").TTool, typeof pencil.handler>>, [pencil.handler, rectangle.handler, ellipse.handler, line.handler, text.handler]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const elementRenderers = useMemo(() => ({
     [TOOLS.PENCIL]: pencil.renderer,
@@ -43,7 +43,7 @@ export function useDrawing(
     [TOOLS.CIRCLE]: ellipse.renderer,
     [TOOLS.LINE]: line.renderer,
     [TOOLS.TEXT]: text.renderer,
-  }), [pencil.renderer, rectangle.renderer, ellipse.renderer, line.renderer, text.renderer]);
+  }) as Partial<Record<import("@whiteboard/types").TTool, typeof pencil.renderer>>, [pencil.renderer, rectangle.renderer, ellipse.renderer, line.renderer, text.renderer]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -67,6 +67,7 @@ export function useDrawing(
         },
       };
 
+      if (getState().activeTool === TOOLS.STICKY) return;
       toolHandlers[getState().activeTool]?.onDown(point, drawCtx);
       reDraw(ctx, getState().elements, elementRenderers);
     };

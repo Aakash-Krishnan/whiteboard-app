@@ -8,4 +8,5 @@ export const TOOL_KEYS: Record<string, { tool: TTool; eraser: boolean }> = {
   l: { tool: TOOLS.LINE, eraser: false },
   t: { tool: TOOLS.TEXT, eraser: false },
   e: { tool: TOOLS.PENCIL, eraser: true },
+  s: { tool: TOOLS.STICKY, eraser: false },
 };

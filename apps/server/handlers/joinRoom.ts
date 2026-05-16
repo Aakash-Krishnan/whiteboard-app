@@ -25,7 +25,7 @@ export function registerJoinRoom(io: Server, socket: Socket): void {
     socket.join(roomId);
 
     // Send current state only to the joiner
-    socket.emit("room-state", { elements: room.elements, users: room.users });
+    socket.emit("room-state", { elements: room.elements, users: room.users, stickies: room.stickies });
 
     // Tell everyone else about the new user
     socket.to(roomId).emit("user-joined", user);
