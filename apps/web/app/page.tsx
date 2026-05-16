@@ -1,6 +1,7 @@
 "use client";
 
 import ContextualToolbar from "@/components/ContextualToolbar";
+import { MobileToolbar } from "@/components/MobileToolbar";
 import { Navbar } from "@/components/Navbar";
 import { RemoteCursors } from "@/components/RemoteCursors";
 import { StickyLayer } from "@/components/StickyLayer";
@@ -217,7 +218,7 @@ export default function Home() {
     <div className="home-page">
       <Navbar users={users} />
       <div className="relative">
-        <Toolbar className="fixed top-1/2 left-3 z-10 -translate-y-1/2">
+        <Toolbar className="fixed top-1/2 left-3 z-10 -translate-y-1/2 hidden md:flex">
           <Toolbar.Tool
             icon={<PencilLineIcon />}
             tool={TOOLS.PENCIL}
@@ -265,6 +266,7 @@ export default function Home() {
             ref={canvasRef}
             id="canvas"
             role="presentation"
+            style={{ touchAction: "none" }}
           >
             This is a fallback
           </canvas>
@@ -278,6 +280,7 @@ export default function Home() {
           />
         </div>
       </div>
+      <MobileToolbar />
     </div>
   );
 }

@@ -50,8 +50,9 @@ export function useDrawing(
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
 
-    const handleMouseDown = (e: MouseEvent) => {
+    const handlePointerDown = (e: PointerEvent) => {
       e.preventDefault();
+      canvas.setPointerCapture(e.pointerId);
       isDrawing.current = true;
       const point = getPointFromEvent(canvas, e);
       originRef.current = point;
@@ -72,7 +73,7 @@ export function useDrawing(
       reDraw(ctx, getState().elements, elementRenderers);
     };
 
-    const handleMouseUp = (e: MouseEvent) => {
+    const handlePointerUp = (e: PointerEvent) => {
       e.preventDefault();
       if (isDrawing.current) {
         const drawCtx: DrawContext = {
@@ -92,7 +93,7 @@ export function useDrawing(
     };
 
     let rafId: number;
-    const handleMouseMove = (e: MouseEvent) => {
+    const handlePointerMove = (e: PointerEvent) => {
       e.preventDefault();
       if (!isDrawing.current || !originRef.current) return;
 
@@ -116,22 +117,22 @@ export function useDrawing(
       );
     };
 
-    const handleMouseLeave = (e: MouseEvent) => {
+    const handlePointerCancel = (e: PointerEvent) => {
       e.preventDefault();
       isDrawing.current = false;
       originRef.current = null;
     };
 
-    canvas.addEventListener("mousedown", handleMouseDown);
-    canvas.addEventListener("mouseup", handleMouseUp);
-    canvas.addEventListener("mousemove", handleMouseMove);
-    canvas.addEventListener("mouseleave", handleMouseLeave);
+    canvas.addEventListener("pointerdown", handlePointerDown);
+    canvas.addEventListener("pointerup", handlePointerUp);
+    canvas.addEventListener("pointermove", handlePointerMove);
+    canvas.addEventListener("pointercancel", handlePointerCancel);
 
     return () => {
-      canvas.removeEventListener("mousedown", handleMouseDown);
-      canvas.removeEventListener("mouseup", handleMouseUp);
-      canvas.removeEventListener("mousemove", handleMouseMove);
-      canvas.removeEventListener("mouseleave", handleMouseLeave);
+      canvas.removeEventListener("pointerdown", handlePointerDown);
+      canvas.removeEventListener("pointerup", handlePointerUp);
+      canvas.removeEventListener("pointermove", handlePointerMove);
+      canvas.removeEventListener("pointercancel", handlePointerCancel);
     };
   }, [canvasRef, addElement, updateLastElement, addPoint, getState, toolHandlers, elementRenderers]);
 
@@ -150,7 +151,7 @@ export function useDrawing(
   return { portal: text.portal };
 }
 
-function getPointFromEvent(canvas: HTMLCanvasElement, e: MouseEvent): TPoint {
+function getPointFromEvent(canvas: HTMLCanvasElement, e: PointerEvent): TPoint {
   const rect = canvas.getBoundingClientRect();
   return { x: e.clientX - rect.left, y: e.clientY - rect.top };
 }

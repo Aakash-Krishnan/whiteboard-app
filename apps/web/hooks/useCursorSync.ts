@@ -10,7 +10,8 @@ export function useCursorSync(
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const handleMouseMove = (e: MouseEvent) => {
+    const handlePointerMove = (e: PointerEvent) => {
+      if (e.pointerType === "touch") return;
       const now = Date.now();
       if (now - lastEmitRef.current < 50) return;
       lastEmitRef.current = now;
@@ -21,7 +22,7 @@ export function useCursorSync(
       emitCursor(x, y);
     };
 
-    canvas.addEventListener("mousemove", handleMouseMove);
-    return () => canvas.removeEventListener("mousemove", handleMouseMove);
+    canvas.addEventListener("pointermove", handlePointerMove);
+    return () => canvas.removeEventListener("pointermove", handlePointerMove);
   }, [canvasRef, emitCursor]);
 }
