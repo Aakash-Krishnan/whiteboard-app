@@ -5,7 +5,9 @@ import { useCanvasStore } from "@/store/canvasStore";
 import { historyManager } from "@/history/HistoryManager";
 
 const ROOM_ID = "room-1";
-const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL ?? "http://localhost:3001";
+console.log("SERVER_URL", process.env.NEXT_PUBLIC_SERVER_URL);
+const SERVER_URL =
+  process.env.NEXT_PUBLIC_SERVER_URL ?? "http://localhost:3001";
 
 export type CursorInfo = {
   userId: string;
@@ -23,7 +25,9 @@ export type UserInfo = {
 
 type UserMeta = { name: string; color: string };
 
-function buildUserList(usersRef: React.MutableRefObject<Record<string, UserMeta>>): UserInfo[] {
+function buildUserList(
+  usersRef: React.MutableRefObject<Record<string, UserMeta>>,
+): UserInfo[] {
   return Object.entries(usersRef.current).map(([userId, meta]) => ({
     userId,
     name: meta.name,
@@ -69,25 +73,39 @@ export function useSocket(
     // Sync full canvas state + build users map when joining
     socket.on(
       "room-state",
-      ({ elements, stickies, users }: { elements: TElement[]; stickies: TStickyNote[]; users: { id: string; name: string; color: string }[] }) => {
+      ({
+        elements,
+        stickies,
+        users,
+      }: {
+        elements: TElement[];
+        stickies: TStickyNote[];
+        users: { id: string; name: string; color: string }[];
+      }) => {
         useCanvasStore.setState({ elements });
         if (stickies?.length) {
-          stickies.forEach((note: TStickyNote) => stickyCallbacksRef.current.onStickyAdd?.(note));
+          stickies.forEach((note: TStickyNote) =>
+            stickyCallbacksRef.current.onStickyAdd?.(note),
+          );
         }
         users.forEach((u) => {
-          if (u.id !== userId) usersRef.current[u.id] = { name: u.name, color: u.color };
+          if (u.id !== userId)
+            usersRef.current[u.id] = { name: u.name, color: u.color };
         });
         onUsersChange(buildUserList(usersRef));
       },
     );
 
     // Track new users joining
-    socket.on("user-joined", (user: { id: string; name: string; color: string }) => {
-      if (user.id !== userId) {
-        usersRef.current[user.id] = { name: user.name, color: user.color };
-        onUsersChange(buildUserList(usersRef));
-      }
-    });
+    socket.on(
+      "user-joined",
+      (user: { id: string; name: string; color: string }) => {
+        if (user.id !== userId) {
+          usersRef.current[user.id] = { name: user.name, color: user.color };
+          onUsersChange(buildUserList(usersRef));
+        }
+      },
+    );
 
     // Register outbound emitters
     historyManager.setSocketEmitter((element) => {
@@ -108,7 +126,13 @@ export function useSocket(
     // Incoming undo from server — skip if own
     socket.on(
       "undo",
-      ({ elementId, userId: fromUserId }: { elementId: string; userId: string }) => {
+      ({
+        elementId,
+        userId: fromUserId,
+      }: {
+        elementId: string;
+        userId: string;
+      }) => {
         if (fromUserId === userId) return;
         useCanvasStore.setState((state) => ({
           elements: state.elements.filter((el) => el.id !== elementId),
@@ -119,7 +143,13 @@ export function useSocket(
     // Incoming redo from server — skip if own
     socket.on(
       "redo",
-      ({ element, userId: fromUserId }: { element: TElement; userId: string }) => {
+      ({
+        element,
+        userId: fromUserId,
+      }: {
+        element: TElement;
+        userId: string;
+      }) => {
         if (fromUserId === userId) return;
         useCanvasStore.setState((state) => ({
           elements: [...state.elements, element],
@@ -130,10 +160,24 @@ export function useSocket(
     // Incoming cursor from another user
     socket.on(
       "cursor-move",
-      ({ userId: fromUserId, x, y }: { userId: string; x: number; y: number }) => {
+      ({
+        userId: fromUserId,
+        x,
+        y,
+      }: {
+        userId: string;
+        x: number;
+        y: number;
+      }) => {
         const meta = usersRef.current[fromUserId];
         if (!meta) return;
-        onCursorMove({ userId: fromUserId, x, y, name: meta.name, color: meta.color });
+        onCursorMove({
+          userId: fromUserId,
+          x,
+          y,
+          name: meta.name,
+          color: meta.color,
+        });
       },
     );
 
@@ -147,9 +191,12 @@ export function useSocket(
     socket.on("sticky:add", ({ note }: { note: TStickyNote }) => {
       stickyCallbacksRef.current.onStickyAdd?.(note);
     });
-    socket.on("sticky:move", (payload: { id: string; x: number; y: number }) => {
-      stickyCallbacksRef.current.onStickyMove?.(payload);
-    });
+    socket.on(
+      "sticky:move",
+      (payload: { id: string; x: number; y: number }) => {
+        stickyCallbacksRef.current.onStickyMove?.(payload);
+      },
+    );
     socket.on("sticky:edit", (payload: { id: string; text: string }) => {
       stickyCallbacksRef.current.onStickyEdit?.(payload);
     });
@@ -193,5 +240,12 @@ export function useSocket(
     socketRef.current?.emit("sticky:delete", { roomId: ROOM_ID, id });
   };
 
-  return { emitCursor, emitStickyAdd, emitStickyMove, emitStickyEdit, emitStickyColor, emitStickyDelete };
+  return {
+    emitCursor,
+    emitStickyAdd,
+    emitStickyMove,
+    emitStickyEdit,
+    emitStickyColor,
+    emitStickyDelete,
+  };
 }
