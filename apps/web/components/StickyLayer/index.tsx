@@ -16,7 +16,14 @@ export function StickyLayer({ onMove, onEdit, onEmit, onColor, onDelete }: Props
   const stickies = useStickyStore((state) => state.stickies);
 
   return (
-    <>
+    <div
+      data-sticky-layer
+      style={{
+        position: "absolute",
+        inset: 0,
+        pointerEvents: "none",
+      }}
+    >
       {stickies.map((note: TStickyNote) => (
         <StickyNote
           key={note.id}
@@ -28,6 +35,6 @@ export function StickyLayer({ onMove, onEdit, onEmit, onColor, onDelete }: Props
           onDelete={onDelete}
         />
       ))}
-    </>
+    </div>
   );
 }
