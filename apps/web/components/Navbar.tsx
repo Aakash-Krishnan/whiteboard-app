@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { DownloadIcon, Loader2Icon } from "lucide-react";
+import { DownloadIcon, FileDownIcon, Loader2Icon } from "lucide-react";
 import type { UserInfo } from "@/hooks/useSocket";
 import { captureBoard } from "@/utils/captureBoard";
+import { exportPDF } from "@/utils/exportPDF";
 
 const MAX_VISIBLE = 4;
 
@@ -23,14 +24,15 @@ function Avatar({ user, border }: { user: UserInfo; border?: string }) {
 
 export function Navbar({ users }: { users: UserInfo[] }) {
   const [showDropdown, setShowDropdown] = useState(false);
-  const [exporting, setExporting] = useState(false);
+  const [exportingPng, setExportingPng] = useState(false);
+  const [exportingPdf, setExportingPdf] = useState(false);
 
   const visible = users.slice(0, MAX_VISIBLE);
   const overflow = users.length - MAX_VISIBLE;
 
-  const handleExport = async () => {
-    if (exporting) return;
-    setExporting(true);
+  const handlePngExport = async () => {
+    if (exportingPng) return;
+    setExportingPng(true);
     try {
       const dataUrl = await captureBoard();
       const a = document.createElement("a");
@@ -40,9 +42,21 @@ export function Navbar({ users }: { users: UserInfo[] }) {
       a.click();
       document.body.removeChild(a);
     } catch (err) {
-      console.error("Export failed:", err);
+      console.error("PNG export failed:", err);
     } finally {
-      setExporting(false);
+      setExportingPng(false);
+    }
+  };
+
+  const handlePdfExport = async () => {
+    if (exportingPdf) return;
+    setExportingPdf(true);
+    try {
+      await exportPDF();
+    } catch (err) {
+      console.error("PDF export failed:", err);
+    } finally {
+      setExportingPdf(false);
     }
   };
 
@@ -57,21 +71,36 @@ export function Navbar({ users }: { users: UserInfo[] }) {
           {ROOM_ID}
         </span>
 
-        {/* Right: export button + avatar stack */}
+        {/* Right: export buttons + avatar stack */}
         <div className="flex items-center gap-3">
           {/* Export PNG button */}
           <button
-            onClick={handleExport}
-            disabled={exporting}
+            onClick={handlePngExport}
+            disabled={exportingPng}
             className="flex items-center gap-1.5 text-xs text-white/70 hover:text-white disabled:opacity-50 transition-colors"
             title="Export as PNG"
           >
-            {exporting ? (
+            {exportingPng ? (
               <Loader2Icon className="w-4 h-4 animate-spin" />
             ) : (
               <DownloadIcon className="w-4 h-4" />
             )}
             <span>PNG</span>
+          </button>
+
+          {/* Export PDF button */}
+          <button
+            onClick={handlePdfExport}
+            disabled={exportingPdf}
+            className="flex items-center gap-1.5 text-xs text-white/70 hover:text-white disabled:opacity-50 transition-colors"
+            title="Export as PDF"
+          >
+            {exportingPdf ? (
+              <Loader2Icon className="w-4 h-4 animate-spin" />
+            ) : (
+              <FileDownIcon className="w-4 h-4" />
+            )}
+            <span>PDF</span>
           </button>
 
           {/* Avatar stack + dropdown */}
