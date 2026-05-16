@@ -1,11 +1,12 @@
 "use client";
 
 import ContextualToolbar from "@/components/ContextualToolbar";
+import { Navbar } from "@/components/Navbar";
 import { RemoteCursors } from "@/components/RemoteCursors";
 import Toolbar from "@/components/Toolbar";
 import { useCanvas } from "@/hooks/useCanvas";
 import { useDrawing } from "@/hooks/useDrawing";
-import { type CursorInfo, useSocket } from "@/hooks/useSocket";
+import { type CursorInfo, type UserInfo, useSocket } from "@/hooks/useSocket";
 import { useCursorSync } from "@/hooks/useCursorSync";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
 import { useCallback, useEffect, useState } from "react";
@@ -23,6 +24,7 @@ export default function Home() {
   const { portal } = useDrawing(canvasRef as React.RefObject<HTMLCanvasElement | null>);
   const { undo, redo } = useUndoRedo();
   const [cursors, setCursors] = useState<Record<string, CursorInfo>>({});
+  const [users, setUsers] = useState<UserInfo[]>([]);
 
   const onCursorMove = useCallback((cursor: CursorInfo) => {
     setCursors((prev) => ({ ...prev, [cursor.userId]: cursor }));
@@ -36,7 +38,9 @@ export default function Home() {
     });
   }, []);
 
-  const { emitCursor } = useSocket(onCursorMove, onUserLeft);
+  const onUsersChange = useCallback((u: UserInfo[]) => setUsers(u), []);
+
+  const { emitCursor } = useSocket(onCursorMove, onUserLeft, onUsersChange);
   useCursorSync(canvasRef as React.RefObject<HTMLCanvasElement | null>, emitCursor);
 
   useEffect(() => {
@@ -58,6 +62,7 @@ export default function Home() {
 
   return (
     <div className="home-page">
+      <Navbar users={users} />
       <div className="relative">
         <Toolbar className="fixed top-1/2 left-3 z-10 -translate-y-1/2">
           <Toolbar.Tool
