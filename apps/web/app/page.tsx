@@ -1,12 +1,14 @@
 "use client";
 
 import ContextualToolbar from "@/components/ContextualToolbar";
+import { RemoteCursors } from "@/components/RemoteCursors";
 import Toolbar from "@/components/Toolbar";
 import { useCanvas } from "@/hooks/useCanvas";
 import { useDrawing } from "@/hooks/useDrawing";
-import { useSocket } from "@/hooks/useSocket";
+import { type CursorInfo, useSocket } from "@/hooks/useSocket";
+import { useCursorSync } from "@/hooks/useCursorSync";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { TOOLS } from "@whiteboard/types/constants/global";
 import {
   CircleIcon,
@@ -20,7 +22,22 @@ export default function Home() {
   const canvasRef = useCanvas();
   const { portal } = useDrawing(canvasRef as React.RefObject<HTMLCanvasElement | null>);
   const { undo, redo } = useUndoRedo();
-  useSocket();
+  const [cursors, setCursors] = useState<Record<string, CursorInfo>>({});
+
+  const onCursorMove = useCallback((cursor: CursorInfo) => {
+    setCursors((prev) => ({ ...prev, [cursor.userId]: cursor }));
+  }, []);
+
+  const onUserLeft = useCallback((userId: string) => {
+    setCursors((prev) => {
+      const next = { ...prev };
+      delete next[userId];
+      return next;
+    });
+  }, []);
+
+  const { emitCursor } = useSocket(onCursorMove, onUserLeft);
+  useCursorSync(canvasRef as React.RefObject<HTMLCanvasElement | null>, emitCursor);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -65,14 +82,17 @@ export default function Home() {
         </Toolbar>
         <ContextualToolbar className="fixed bottom-3 left-1/2 z-10 -translate-x-1/2" />
         {portal}
-        <canvas
-          className="bg-[rgba(0,0,0,0.4)]"
-          ref={canvasRef}
-          id="canvas"
-          role="presentation"
-        >
-          This is a fallback
-        </canvas>
+        <div style={{ position: "relative" }}>
+          <canvas
+            className="bg-[rgba(0,0,0,0.4)]"
+            ref={canvasRef}
+            id="canvas"
+            role="presentation"
+          >
+            This is a fallback
+          </canvas>
+          <RemoteCursors cursors={cursors} />
+        </div>
       </div>
     </div>
   );
