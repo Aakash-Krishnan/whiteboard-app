@@ -15,11 +15,26 @@ export type CursorInfo = {
   color: string;
 };
 
+export type UserInfo = {
+  userId: string;
+  name: string;
+  color: string;
+};
+
 type UserMeta = { name: string; color: string };
+
+function buildUserList(usersRef: React.MutableRefObject<Record<string, UserMeta>>): UserInfo[] {
+  return Object.entries(usersRef.current).map(([userId, meta]) => ({
+    userId,
+    name: meta.name,
+    color: meta.color,
+  }));
+}
 
 export function useSocket(
   onCursorMove: (cursor: CursorInfo) => void,
   onUserLeft: (userId: string) => void,
+  onUsersChange: (users: UserInfo[]) => void,
 ): { emitCursor: (x: number, y: number) => void } {
   const userIdRef = useRef(crypto.randomUUID());
   const addElement = useCanvasStore((state) => state.addElement);
@@ -41,12 +56,16 @@ export function useSocket(
         users.forEach((u) => {
           if (u.id !== userId) usersRef.current[u.id] = { name: u.name, color: u.color };
         });
+        onUsersChange(buildUserList(usersRef));
       },
     );
 
     // Track new users joining
     socket.on("user-joined", (user: { id: string; name: string; color: string }) => {
-      if (user.id !== userId) usersRef.current[user.id] = { name: user.name, color: user.color };
+      if (user.id !== userId) {
+        usersRef.current[user.id] = { name: user.name, color: user.color };
+        onUsersChange(buildUserList(usersRef));
+      }
     });
 
     // Register outbound emitters
@@ -101,6 +120,7 @@ export function useSocket(
     socket.on("user-left", ({ userId: leftUserId }: { userId: string }) => {
       delete usersRef.current[leftUserId];
       onUserLeft(leftUserId);
+      onUsersChange(buildUserList(usersRef));
     });
 
     return () => {
@@ -109,7 +129,7 @@ export function useSocket(
       historyManager.clearSocketEmitter();
       historyManager.clearUndoRedoEmitters();
     };
-  }, [addElement, onCursorMove, onUserLeft]);
+  }, [addElement, onCursorMove, onUserLeft, onUsersChange]);
 
   const emitCursor = (x: number, y: number) => {
     socketRef.current?.emit("cursor-move", {
