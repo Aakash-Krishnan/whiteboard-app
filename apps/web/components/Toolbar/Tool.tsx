@@ -13,10 +13,11 @@ type TToolProps = {
   icon: React.ReactNode;
   tool: TTool;
   label: string;
+  shortcut?: string;
 };
 
 export default function Tool(props: TToolProps) {
-  const { icon, tool, label } = props;
+  const { icon, tool, label, shortcut } = props;
   const { activeTool, setActiveTool } = useToolBar();
 
   const handleClick = () => {
@@ -42,7 +43,7 @@ export default function Tool(props: TToolProps) {
         </Button>
       </TooltipTrigger>
       <TooltipContent side="right" sideOffset={8}>
-        <p>{label}</p>
+        <p>{label}{shortcut && <kbd className="ml-2 opacity-60 text-[10px] border border-current rounded px-1">{shortcut}</kbd>}</p>
       </TooltipContent>
     </Tooltip>
   );

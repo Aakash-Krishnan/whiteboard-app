@@ -10,7 +10,9 @@ import { type CursorInfo, type UserInfo, useSocket } from "@/hooks/useSocket";
 import { useCursorSync } from "@/hooks/useCursorSync";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
 import { useCallback, useEffect, useState } from "react";
+import { useCanvasStore } from "@/store/canvasStore";
 import { TOOLS } from "@whiteboard/types/constants/global";
+import { TOOL_KEYS } from "@/constants/tools";
 import {
   CircleIcon,
   Minus,
@@ -21,8 +23,12 @@ import {
 
 export default function Home() {
   const canvasRef = useCanvas();
-  const { portal } = useDrawing(canvasRef as React.RefObject<HTMLCanvasElement | null>);
+  const { portal } = useDrawing(
+    canvasRef as React.RefObject<HTMLCanvasElement | null>,
+  );
   const { undo, redo } = useUndoRedo();
+  const setActiveTool = useCanvasStore((state) => state.setActiveTool);
+  const setIsEraser = useCanvasStore((state) => state.setIsEraser);
   const [cursors, setCursors] = useState<Record<string, CursorInfo>>({});
   const [users, setUsers] = useState<UserInfo[]>([]);
 
@@ -41,24 +47,45 @@ export default function Home() {
   const onUsersChange = useCallback((u: UserInfo[]) => setUsers(u), []);
 
   const { emitCursor } = useSocket(onCursorMove, onUserLeft, onUsersChange);
-  useCursorSync(canvasRef as React.RefObject<HTMLCanvasElement | null>, emitCursor);
+  useCursorSync(
+    canvasRef as React.RefObject<HTMLCanvasElement | null>,
+    emitCursor,
+  );
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      const isMac = /mac/i.test(navigator.userAgent) && !/iphone|ipad/i.test(navigator.userAgent);
+      // Skip if typing in an input/textarea
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      )
+        return;
+
+      const isMac =
+        /mac/i.test(navigator.userAgent) &&
+        !/iphone|ipad/i.test(navigator.userAgent);
       const modKey = isMac ? e.metaKey : e.ctrlKey;
-      if (!modKey) return;
-      if (e.key === "z" && !e.shiftKey) {
-        e.preventDefault();
-        undo();
-      } else if (e.key === "y" || (e.key === "z" && e.shiftKey)) {
-        e.preventDefault();
-        redo();
+
+      if (modKey) {
+        if (e.key === "z" && !e.shiftKey) {
+          e.preventDefault();
+          undo();
+        } else if (e.key === "y" || (e.key === "z" && e.shiftKey)) {
+          e.preventDefault();
+          redo();
+        }
+        return;
+      }
+
+      const binding = TOOL_KEYS[e.key.toLowerCase()];
+      if (binding) {
+        setActiveTool(binding.tool);
+        setIsEraser(binding.eraser);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [undo, redo]);
+  }, [undo, redo, setActiveTool, setIsEraser]);
 
   return (
     <div className="home-page">
@@ -69,19 +96,32 @@ export default function Home() {
             icon={<PencilLineIcon />}
             tool={TOOLS.PENCIL}
             label="Pen"
+            shortcut="P"
           />
           <Toolbar.Tool
             icon={<RectangleHorizontalIcon />}
             tool={TOOLS.RECTANGLE}
             label="Rectangle"
+            shortcut="R"
           />
           <Toolbar.Tool
             icon={<CircleIcon />}
             tool={TOOLS.CIRCLE}
             label="Circle"
+            shortcut="C"
           />
-          <Toolbar.Tool icon={<Minus />} tool={TOOLS.LINE} label="Line" />
-          <Toolbar.Tool icon={<TypeIcon />} tool={TOOLS.TEXT} label="Text" />
+          <Toolbar.Tool
+            icon={<Minus />}
+            tool={TOOLS.LINE}
+            label="Line"
+            shortcut="L"
+          />
+          <Toolbar.Tool
+            icon={<TypeIcon />}
+            tool={TOOLS.TEXT}
+            label="Text"
+            shortcut="T"
+          />
           <Toolbar.Separator />
           <Toolbar.UndoRedo />
         </Toolbar>
