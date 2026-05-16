@@ -69,6 +69,7 @@ export function StickyNote({ note, onMove, onEdit, onEmit, onColor, onDelete }: 
         background: note.bgColor,
         zIndex: 20,
         cursor: "grab",
+        pointerEvents: "auto",
       }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
