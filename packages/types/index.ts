@@ -13,6 +13,7 @@ export type TDashStyle = (typeof DASH_STYLES)[keyof typeof DASH_STYLES];
 export type TArrowHead = (typeof ARROW_HEADS)[keyof typeof ARROW_HEADS];
 
 type TCommonToolProperties = {
+  id: string;
   color?: string;
   thickness: number;
   fillMode?: TFillMode;

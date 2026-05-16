@@ -8,6 +8,7 @@ const handler: ToolHandler = {
   onDown: (point, { addElement, getState }) => {
     const { activeColor, activeThickness, fillMode, activeTool } = getState();
     const ellipse: TEllipse = {
+      id: crypto.randomUUID(),
       x: point.x,
       y: point.y,
       radiusX: 0,
