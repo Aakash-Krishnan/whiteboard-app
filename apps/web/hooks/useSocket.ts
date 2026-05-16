@@ -5,7 +5,7 @@ import { useCanvasStore } from "@/store/canvasStore";
 import { historyManager } from "@/history/HistoryManager";
 
 const ROOM_ID = "room-1";
-const SERVER_URL = "http://localhost:3001";
+const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL ?? "http://localhost:3001";
 
 export type CursorInfo = {
   userId: string;
